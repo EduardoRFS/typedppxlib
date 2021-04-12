@@ -1,0 +1,20 @@
+(library
+ (name typedppxlib_ocaml_driver)
+ (public_name typedppxlib.ocaml.driver)
+ (flags
+  (:standard
+   -w
+   -9
+   -open
+   Typedppxlib_ocaml_utils
+   -open
+   Typedppxlib_ocaml_stdlib
+   -open
+   Typedppxlib_ocaml_parsing
+   -open
+   Typedppxlib_ocaml_typing))
+ (libraries
+  typedppxlib_ocaml_utils
+  typedppxlib_ocaml_stdlib
+  typedppxlib_ocaml_parsing
+  typedppxlib_ocaml_typing))
