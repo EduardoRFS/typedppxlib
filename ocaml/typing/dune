@@ -9,5 +9,10 @@
    -open
    Typedppxlib_ocaml_utils
    -open
+   Typedppxlib_ocaml_stdlib
+   -open
    Typedppxlib_ocaml_parsing))
- (libraries typedppxlib_ocaml_utils typedppxlib_ocaml_parsing))
+ (libraries
+  typedppxlib_ocaml_utils
+  typedppxlib_ocaml_stdlib
+  typedppxlib_ocaml_parsing))
