@@ -1,0 +1,13 @@
+(library
+ (name typedppxlib_ocaml_typing)
+ (public_name typedppxlib.ocaml.typing)
+ (modules_without_implementation annot outcometree lambda debuginfo)
+ (flags
+  (:standard
+   -w
+   -9
+   -open
+   Typedppxlib_ocaml_utils
+   -open
+   Typedppxlib_ocaml_parsing))
+ (libraries typedppxlib_ocaml_utils typedppxlib_ocaml_parsing))

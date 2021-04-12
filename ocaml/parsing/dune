@@ -1,0 +1,7 @@
+(library
+ (name typedppxlib_ocaml_parsing)
+ (modules_without_implementation asttypes parsetree)
+ (public_name typedppxlib.ocaml.parsing)
+ (flags
+  (:standard -w -9 -open Typedppxlib_ocaml_utils))
+ (libraries typedppxlib_ocaml_utils))
