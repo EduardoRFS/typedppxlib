@@ -1,0 +1,4 @@
+(library
+ (name typedppxlib)
+ (public_name typedppxlib)
+ (libraries ppxlib ocaml-compiler-libs.common))
