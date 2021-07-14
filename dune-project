@@ -11,4 +11,5 @@
    (and
     (>= "4.08.0")
     (< "4.13.0")))
-  ppxlib))
+  ppxlib
+  ppx_optcomp))

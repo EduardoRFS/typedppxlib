@@ -1,5 +1,5 @@
 {
-  "checksum": "54f22e67ac8a5fa7ebe36e87c8198775",
+  "checksum": "8c736b42459acb0833ea4a36e6c2f934",
   "root": "typedppxlib@link-dev:./package.json",
   "node": {
     "typedppxlib@link-dev:./package.json": {
@@ -14,6 +14,7 @@
       "overrides": [],
       "dependencies": [
         "ocaml@4.12.0@d41d8cd9", "@opam/ppxlib@opam:0.22.2@61009929",
+        "@opam/ppx_optcomp@opam:v0.14.2@ba385ee2",
         "@opam/dune@opam:2.9.0@489e77a9"
       ],
       "devDependencies": [
@@ -430,6 +431,35 @@
       "devDependencies": [
         "ocaml@4.12.0@d41d8cd9", "@opam/yojson@opam:1.7.0@69d87312",
         "@opam/dune@opam:2.9.0@489e77a9"
+      ]
+    },
+    "@opam/ppx_optcomp@opam:v0.14.2@ba385ee2": {
+      "id": "@opam/ppx_optcomp@opam:v0.14.2@ba385ee2",
+      "name": "@opam/ppx_optcomp",
+      "version": "opam:v0.14.2",
+      "source": {
+        "type": "install",
+        "source": [
+          "archive:https://opam.ocaml.org/cache/md5/2c/2c8abde792ba4b8868e7dfb5afb3e1c5#md5:2c8abde792ba4b8868e7dfb5afb3e1c5",
+          "archive:https://github.com/janestreet/ppx_optcomp/archive/v0.14.2.tar.gz#md5:2c8abde792ba4b8868e7dfb5afb3e1c5"
+        ],
+        "opam": {
+          "name": "ppx_optcomp",
+          "version": "v0.14.2",
+          "path": "esy.lock/opam/ppx_optcomp.v0.14.2"
+        }
+      },
+      "overrides": [],
+      "dependencies": [
+        "ocaml@4.12.0@d41d8cd9", "@opam/stdio@opam:v0.14.0@a5affb43",
+        "@opam/ppxlib@opam:0.22.2@61009929",
+        "@opam/dune@opam:2.9.0@489e77a9", "@opam/base@opam:v0.14.1@9b424fee",
+        "@esy-ocaml/substs@0.0.1@d41d8cd9"
+      ],
+      "devDependencies": [
+        "ocaml@4.12.0@d41d8cd9", "@opam/stdio@opam:v0.14.0@a5affb43",
+        "@opam/ppxlib@opam:0.22.2@61009929",
+        "@opam/dune@opam:2.9.0@489e77a9", "@opam/base@opam:v0.14.1@9b424fee"
       ]
     },
     "@opam/ppx_derivers@opam:1.2.1@ecf0aa45": {

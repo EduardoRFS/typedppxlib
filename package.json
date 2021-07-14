@@ -3,7 +3,8 @@
   "dependencies": {
     "ocaml": "4.12.x",
     "@opam/dune": "*",
-    "@opam/ppxlib": "*"
+    "@opam/ppxlib": "*",
+    "@opam/ppx_optcomp": "*"
   },
   "devDependencies": {
     "@opam/ocaml-lsp-server": "*",
