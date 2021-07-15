@@ -189,6 +189,7 @@ type recarg =
   | Required
   | Rejected
 
+let type_expect_ref = ref (fun ?in_function:_ ?recarg:_ _ -> assert false)
 
 let mk_expected ?explanation ty = { ty; explanation; }
 
@@ -2562,7 +2563,8 @@ let rec type_exp ?recarg env sexp =
    In the principal case, [type_expected'] may be at generic_level.
  *)
 
-and type_expect ?in_function ?recarg env sexp ty_expected_explained =
+and type_expect ?in_function ?recarg env = !type_expect_ref ?in_function ?recarg env
+and type_expect' ?in_function ?recarg env sexp ty_expected_explained =
   let previous_saved_types = Cmt_format.get_saved_types () in
   let exp =
     Builtin_attributes.warning_scope sexp.pexp_attributes
@@ -5589,3 +5591,7 @@ let () =
 let type_expect ?in_function env e ty = type_expect ?in_function env e ty
 let type_exp env e = type_exp env e
 let type_argument env e t1 t2 = type_argument env e t1 t2
+
+(* typedppxlib *)
+
+let () = type_expect_ref := type_expect'

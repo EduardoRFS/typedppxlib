@@ -222,3 +222,15 @@ val constant: Parsetree.constant -> (Asttypes.constant, error) result
 val check_recursive_bindings : Env.t -> Typedtree.value_binding list -> unit
 val check_recursive_class_bindings :
   Env.t -> Ident.t list -> Typedtree.class_expr list -> unit
+
+(* typedppxlib *)
+type recarg =
+  | Allowed
+  | Required
+  | Rejected
+
+val type_expect_ref : (
+  ?in_function:Warnings.loc * type_expr ->
+  ?recarg:recarg ->
+  Env.t ->
+  Parsetree.expression -> type_expected -> Typedtree.expression) ref
