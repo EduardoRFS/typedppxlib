@@ -14,17 +14,32 @@ module Hooks = struct
     Parsetree.expression ->
     Typecore.type_expected ->
     Typedtree.expression
-  type base = { type_package : type_package; type_expect : type_expect }
+  type type_extension =
+    ?in_function:Warnings.loc * Types.type_expr ->
+    recarg:Typecore.recarg ->
+    Env.t ->
+    Parsetree.expression ->
+    Typecore.type_expected ->
+    Parsetree.extension ->
+    Typedtree.expression
+
+  type base = {
+    type_package : type_package;
+    type_expect : type_expect;
+    type_extension : type_extension;
+  }
 
   type t = {
     type_package : base -> type_package;
     type_expect : base -> type_expect;
+    type_extension : base -> type_extension;
   }
 
   let default =
     {
       type_package = (fun super -> super.type_package);
       type_expect = (fun super -> super.type_expect);
+      type_extension = (fun super -> super.type_extension);
     }
 
   let instance =
@@ -32,6 +47,7 @@ module Hooks = struct
       ({
          type_package = !Typecore.type_package;
          type_expect = !Typecore.type_expect_ref;
+         type_extension = !Typecore.type_extension_ref;
        }
         : base)
   let register hook =
@@ -41,10 +57,18 @@ module Hooks = struct
       {
         type_package = (fun env -> hook.type_package super env);
         type_expect = (fun ?in_function -> hook.type_expect super ?in_function);
+        type_extension =
+          (fun ?in_function -> hook.type_extension super ?in_function);
       }
 
   (* register hooks *)
   let () = Typecore.type_package := fun env -> !instance.type_package env
+  let () =
+    Typecore.type_expect_ref :=
+      fun ?in_function -> !instance.type_expect ?in_function
+  let () =
+    Typecore.type_extension_ref :=
+      fun ?in_function -> !instance.type_extension ?in_function
 end
 
 module Transform = struct

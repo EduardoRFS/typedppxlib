@@ -13,12 +13,25 @@ module Hooks : sig
     Parsetree.expression ->
     Typecore.type_expected ->
     Typedtree.expression
+  type type_extension =
+    ?in_function:Warnings.loc * Types.type_expr ->
+    recarg:Typecore.recarg ->
+    Env.t ->
+    Parsetree.expression ->
+    Typecore.type_expected ->
+    Parsetree.extension ->
+    Typedtree.expression
 
-  type base = { type_package : type_package; type_expect : type_expect }
+  type base = {
+    type_package : type_package;
+    type_expect : type_expect;
+    type_extension : type_extension;
+  }
 
   type t = {
     type_package : base -> type_package;
     type_expect : base -> type_expect;
+    type_extension : base -> type_extension;
   }
 
   val default : t
