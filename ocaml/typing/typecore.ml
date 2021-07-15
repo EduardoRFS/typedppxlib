@@ -189,7 +189,10 @@ type recarg =
   | Required
   | Rejected
 
+(* typedppxlib start *)
 let type_expect_ref = ref (fun ?in_function:_ ?recarg:_ _ -> assert false)
+let type_extension_ref = ref (fun ?in_function:_ ~recarg:_ _ -> assert false)
+(* typedppxlib end*)
 
 let mk_expected ?explanation ty = { ty; explanation; }
 
@@ -3704,8 +3707,8 @@ and type_expect_
           raise (Error (loc, env, Invalid_extension_constructor_payload))
       end
   | Pexp_extension ext ->
-      raise (Error_forward (Builtin_attributes.error_of_extension ext))
-
+      (* typedppxlib *)
+      !type_extension_ref ?in_function ~recarg env sexp ty_expected_explained ext
   | Pexp_unreachable ->
       re { exp_desc = Texp_unreachable;
            exp_loc = loc; exp_extra = [];
@@ -5593,5 +5596,6 @@ let type_exp env e = type_exp env e
 let type_argument env e t1 t2 = type_argument env e t1 t2
 
 (* typedppxlib *)
-
 let () = type_expect_ref := type_expect'
+let () = type_extension_ref :=
+  fun ?in_function:_ ~recarg:_ _ _ _ ext -> raise (Error_forward (Builtin_attributes.error_of_extension ext))

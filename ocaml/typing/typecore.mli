@@ -234,3 +234,11 @@ val type_expect_ref : (
   ?recarg:recarg ->
   Env.t ->
   Parsetree.expression -> type_expected -> Typedtree.expression) ref
+val type_extension_ref : (
+  ?in_function:Warnings.loc * type_expr ->
+  recarg:recarg ->
+  Env.t ->
+  Parsetree.expression ->
+  type_expected ->
+  Parsetree.extension ->
+  Typedtree.expression) ref
