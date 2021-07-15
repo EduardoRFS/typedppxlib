@@ -6,9 +6,20 @@ module Hooks : sig
     Path.t ->
     Longident.t list ->
     Typedtree.module_expr * Types.type_expr list
-  type base = { type_package : type_package }
+  type type_expect =
+    ?in_function:Warnings.loc * Types.type_expr ->
+    ?recarg:Typecore.recarg ->
+    Env.t ->
+    Parsetree.expression ->
+    Typecore.type_expected ->
+    Typedtree.expression
 
-  type t = { type_package : base -> type_package }
+  type base = { type_package : type_package; type_expect : type_expect }
+
+  type t = {
+    type_package : base -> type_package;
+    type_expect : base -> type_expect;
+  }
 
   val default : t
 end

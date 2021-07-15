@@ -7,17 +7,41 @@ module Hooks = struct
     Path.t ->
     Longident.t list ->
     Typedtree.module_expr * Types.type_expr list
-  type base = { type_package : type_package }
+  type type_expect =
+    ?in_function:Warnings.loc * Types.type_expr ->
+    ?recarg:Typecore.recarg ->
+    Env.t ->
+    Parsetree.expression ->
+    Typecore.type_expected ->
+    Typedtree.expression
+  type base = { type_package : type_package; type_expect : type_expect }
 
-  type t = { type_package : base -> type_package }
+  type t = {
+    type_package : base -> type_package;
+    type_expect : base -> type_expect;
+  }
 
-  let default = { type_package = (fun super -> super.type_package) }
+  let default =
+    {
+      type_package = (fun super -> super.type_package);
+      type_expect = (fun super -> super.type_expect);
+    }
 
-  let instance = ref ({ type_package = !Typecore.type_package } : base)
+  let instance =
+    ref
+      ({
+         type_package = !Typecore.type_package;
+         type_expect = !Typecore.type_expect_ref;
+       }
+        : base)
   let register hook =
     let super = !instance in
 
-    instance := { type_package = (fun env -> hook.type_package super env) }
+    instance :=
+      {
+        type_package = (fun env -> hook.type_package super env);
+        type_expect = (fun ?in_function -> hook.type_expect super ?in_function);
+      }
 
   (* register hooks *)
   let () = Typecore.type_package := fun env -> !instance.type_package env
