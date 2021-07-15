@@ -1,5 +1,9 @@
 {
   "name": "typedppxlib",
+  "esy": {
+    "build": "dune build -p #{self.name}",
+    "install": "esy-installer #{self.name}.install"
+  },
   "dependencies": {
     "ocaml": "*",
     "@opam/dune": "*",
