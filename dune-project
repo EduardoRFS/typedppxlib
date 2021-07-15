@@ -6,10 +6,4 @@
 
 (package
  (name typedppxlib)
- (depends
-  (ocaml
-   (and
-    (>= "4.08.0")
-    (< "4.13.0")))
-  ppxlib
-  ppx_optcomp))
+ (depends ocaml ppxlib ppx_optcomp))

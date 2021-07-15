@@ -18,7 +18,7 @@
         "@opam/dune@opam:2.9.0@489e77a9"
       ],
       "devDependencies": [
-        "@opam/ocamlformat@opam:0.18.0@4d3e0b0e",
+        "ocaml@4.12.0@d41d8cd9", "@opam/ocamlformat@opam:0.18.0@4d3e0b0e",
         "@opam/ocaml-lsp-server@opam:1.7.0@2cdbe0ed"
       ]
     },

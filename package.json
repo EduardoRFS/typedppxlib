@@ -1,12 +1,13 @@
 {
   "name": "typedppxlib",
   "dependencies": {
-    "ocaml": "4.12.x",
+    "ocaml": "*",
     "@opam/dune": "*",
     "@opam/ppxlib": "*",
     "@opam/ppx_optcomp": "*"
   },
   "devDependencies": {
+    "ocaml": "4.12.x",
     "@opam/ocaml-lsp-server": "*",
     "@opam/ocamlformat": "*"
   }
