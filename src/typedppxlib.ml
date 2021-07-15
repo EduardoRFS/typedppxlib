@@ -19,25 +19,35 @@ module Hooks = struct
     instance := { type_package' = (fun env -> hook.type_package super env) }
 end
 
+module Transform = struct
+  open Typedppxlib_ocaml_driver
+  open Typedppxlib_ocaml_typing
+
+  let env =
+    lazy
+      (Compmisc.init_path ();
+       Compmisc.initial_env ())
+
+  let instance = ref (fun tstr -> tstr)
+  let register transform =
+    let super = !instance in
+    instance := fun tstr -> super (transform tstr)
+
+  let transform str =
+    let env = Lazy.force_val env in
+    let tstr, _, _, _ = Typemod.type_structure env str in
+    let transform = !instance in
+    Untypeast.untype_structure (transform tstr)
+end
 open Ppxlib
-open Typedppxlib_ocaml_driver
-open Typedppxlib_ocaml_typing
 
 let registered = ref false
 
-let env =
-  lazy
-    (Compmisc.init_path ();
-     Compmisc.initial_env ())
-let transform str =
-  let env = Lazy.force_val env in
-  let tstr, _, _, _ = Typemod.type_structure env str in
-  Untypeast.untype_structure tstr
-
-let register _name hook =
+let register ?hooks ?impl _name =
   if not !registered then (
     registered := true;
     Driver.register_transformation
-      ~instrument:(Driver.Instrument.make ~position:After transform)
+      ~instrument:(Driver.Instrument.make ~position:After Transform.transform)
       "typedppxlib");
-  Hooks.register hook
+  (match hooks with Some hooks -> Hooks.register hooks | None -> ());
+  match impl with Some impl -> Transform.register impl | None -> ()

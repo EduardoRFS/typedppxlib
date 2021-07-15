@@ -1,6 +1,5 @@
+open Typedppxlib_ocaml_typing
 module Hooks : sig
-  open Typedppxlib_ocaml_typing
-
   type type_package =
     Env.t ->
     Parsetree.module_expr ->
@@ -14,5 +13,9 @@ module Hooks : sig
   val default : t
 end
 
-val register : string -> Hooks.t -> unit
+val register :
+  ?hooks:Hooks.t ->
+  ?impl:(Typedtree.structure -> Typedtree.structure) ->
+  string ->
+  unit
 (** [register name hook] *)
