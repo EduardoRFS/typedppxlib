@@ -1,22 +1,26 @@
 module Hooks = struct
   open Typedppxlib_ocaml_typing
+
   type type_package =
     Env.t ->
     Parsetree.module_expr ->
     Path.t ->
     Longident.t list ->
     Typedtree.module_expr * Types.type_expr list
-  type base = { type_package' : type_package }
+  type base = { type_package : type_package }
 
   type t = { type_package : base -> type_package }
 
-  let default = { type_package = (fun super -> super.type_package') }
+  let default = { type_package = (fun super -> super.type_package) }
 
-  let instance = ref { type_package' = (fun env -> !Typecore.type_package env) }
+  let instance = ref ({ type_package = !Typecore.type_package } : base)
   let register hook =
     let super = !instance in
 
-    instance := { type_package' = (fun env -> hook.type_package super env) }
+    instance := { type_package = (fun env -> hook.type_package super env) }
+
+  (* register hooks *)
+  let () = Typecore.type_package := fun env -> !instance.type_package env
 end
 
 module Transform = struct

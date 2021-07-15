@@ -6,7 +6,7 @@ module Hooks : sig
     Path.t ->
     Longident.t list ->
     Typedtree.module_expr * Types.type_expr list
-  type base = { type_package' : type_package }
+  type base = { type_package : type_package }
 
   type t = { type_package : base -> type_package }
 
