@@ -1,4 +1,6 @@
 module Hooks : sig
+  open Typedppxlib_ocaml_typing
+
   type type_package =
     Env.t ->
     Parsetree.module_expr ->

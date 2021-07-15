@@ -1,5 +1,5 @@
 module Hooks = struct
-  open Ocaml_common
+  open Typedppxlib_ocaml_typing
   type type_package =
     Env.t ->
     Parsetree.module_expr ->
@@ -20,7 +20,8 @@ module Hooks = struct
 end
 
 open Ppxlib
-open Ocaml_common
+open Typedppxlib_ocaml_driver
+open Typedppxlib_ocaml_typing
 
 let registered = ref false
 
@@ -30,9 +31,9 @@ let env =
      Compmisc.initial_env ())
 let transform str =
   let env = Lazy.force_val env in
-  let str = Ppxlib_ast.Selected_ast.to_ocaml Structure str in
   let tstr, _, _, _ = Typemod.type_structure env str in
-  Untypeast.untype_structure tstr |> Ppxlib_ast.Selected_ast.of_ocaml Structure
+  Untypeast.untype_structure tstr
+
 let register _name hook =
   if not !registered then (
     registered := true;

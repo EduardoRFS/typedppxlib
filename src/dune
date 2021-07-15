@@ -1,4 +1,4 @@
 (library
  (name typedppxlib)
  (public_name typedppxlib)
- (libraries ppxlib ocaml-compiler-libs.common))
+ (libraries ppxlib typedppxlib_ocaml_driver typedppxlib_ocaml_typing))
