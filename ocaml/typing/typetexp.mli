@@ -83,3 +83,6 @@ type policy = Fixed | Extensible | Univars
 val transl_type_ref : (Env.t ->
   policy -> Parsetree.core_type -> Typedtree.core_type)
  ref
+val transl_extension_ref : (Env.t ->
+  policy -> Parsetree.core_type -> Parsetree.extension -> Typedtree.core_type)
+ ref

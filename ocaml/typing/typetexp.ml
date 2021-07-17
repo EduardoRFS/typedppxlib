@@ -526,8 +526,11 @@ and transl_type_aux env policy styp =
             pack_txt = p;
            }) ty
   | Ptyp_extension ext ->
-      raise (Error_forward (Builtin_attributes.error_of_extension ext))
-
+(* typedppxlib start *)
+      !transl_extension_ref env policy styp ext
+and transl_extension_ref = ref (fun _ _ _ ext ->
+  raise (Error_forward (Builtin_attributes.error_of_extension ext)))
+(* typedppxlib end *)
 and transl_poly_type env policy t =
   transl_type env policy (Ast_helper.Typ.force_poly t)
 
