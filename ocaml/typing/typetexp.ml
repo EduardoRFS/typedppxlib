@@ -161,10 +161,14 @@ let new_pre_univar ?name () =
 
 type policy = Fixed | Extensible | Univars
 
-let rec transl_type env policy styp =
+let rec transl_type' env policy styp =
   Builtin_attributes.warning_scope styp.ptyp_attributes
     (fun () -> transl_type_aux env policy styp)
 
+(* typedppxlib start *)
+and transl_type_ref = ref transl_type'
+and transl_type env policy styp = !transl_type_ref env policy styp
+(* typedppxlib end *)
 and transl_type_aux env policy styp =
   let loc = styp.ptyp_loc in
   let ctyp ctyp_desc ctyp_type =
