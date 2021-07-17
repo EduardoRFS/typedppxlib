@@ -70,7 +70,64 @@ module Hooks = struct
     Typecore.type_extension_ref :=
       fun ?in_function -> !instance.type_extension ?in_function
 end
+module Ast_pattern = struct
+  type ('a, 'b, 'c) t = To_b : ('a, 'a -> 'b, 'b) t
+  let __ = To_b
+end
+module Extension = struct
+  open Typedppxlib_ocaml_typing
 
+  module Context = struct
+    type ('return, 'expected) t =
+      | Expression : (Typedtree.expression, Typecore.type_expected) t
+    let expression = Expression
+  end
+  type t =
+    | T : {
+        name : string;
+        context : ('return, 'expected) Context.t;
+        pattern : (Parsetree.payload, 'a, 'return) Ast_pattern.t;
+        expander : loc:Location.t -> env:Env.t -> expected:'expected -> 'a;
+      }
+        -> t
+  let declare name context pattern expander =
+    T { name; context; pattern; expander }
+
+  let instance = Hashtbl.create 8
+  let register (T extension) =
+    match Hashtbl.find_opt instance extension.name with
+    (* what to do here? *)
+    | Some _ ->
+        failwith (Printf.sprintf "two ppx with same name %s" extension.name)
+    | None -> Hashtbl.add instance extension.name (T extension)
+
+  let () =
+    let hooks =
+      {
+        Hooks.default with
+        type_extension =
+          (fun super ?in_function ~recarg env expr expected
+               ((name, payload) as extension) ->
+            let Location.{ txt = name; loc = name_loc } = name in
+            match Hashtbl.find_opt instance name with
+            (* TODO: which loc goes here *)
+            | Some
+                (T ({ context = Expression; pattern = To_b; _ } as extension))
+              ->
+                extension.expander ~loc:name_loc ~env ~expected payload
+            | None ->
+                super.type_extension ?in_function ~recarg env expr expected
+                  extension);
+      }
+    in
+    Hooks.register hooks
+end
+module Context_free = struct
+  module Rule = struct
+    type t = Extension.t
+    let extension t = t
+  end
+end
 module Transform = struct
   open Typedppxlib_ocaml_driver
   open Typedppxlib_ocaml_typing
@@ -91,15 +148,16 @@ module Transform = struct
     let transform = !instance in
     Untypeast.untype_structure (transform tstr)
 end
-open Ppxlib
 
 let registered = ref false
 
-let register ?hooks ?impl _name =
+let register ?(rules = []) ?hooks ?impl _name =
   if not !registered then (
+    let open Ppxlib in
     registered := true;
     Driver.register_transformation
       ~instrument:(Driver.Instrument.make ~position:After Transform.transform)
       "typedppxlib");
+  List.iter Extension.register rules;
   (match hooks with Some hooks -> Hooks.register hooks | None -> ());
   match impl with Some impl -> Transform.register impl | None -> ()

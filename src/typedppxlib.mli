@@ -1,4 +1,30 @@
 open Typedppxlib_ocaml_typing
+module Ast_pattern : sig
+  type ('a, 'b, 'c) t
+
+  val __ : ('a, 'a -> 'b, 'b) t
+end
+module Extension : sig
+  module Context : sig
+    type ('return, 'expected) t
+    val expression : (Typedtree.expression, Typecore.type_expected) t
+  end
+  type t
+
+  val declare :
+    string ->
+    ('return, 'expected) Context.t ->
+    (Parsetree.payload, 'a, 'return) Ast_pattern.t ->
+    (loc:Location.t -> env:Env.t -> expected:'expected -> 'a) ->
+    t
+end
+module Context_free : sig
+  module Rule : sig
+    type t
+
+    val extension : Extension.t -> t
+  end
+end
 module Hooks : sig
   type type_package =
     Env.t ->
@@ -38,8 +64,9 @@ module Hooks : sig
 end
 
 val register :
+  ?rules:Context_free.Rule.t list ->
   ?hooks:Hooks.t ->
   ?impl:(Typedtree.structure -> Typedtree.structure) ->
   string ->
   unit
-(** [register name hook] *)
+(** [register ~rules ~hooks ~impl name] *)
