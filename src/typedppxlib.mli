@@ -49,12 +49,19 @@ module Hooks : sig
     Typedtree.expression
   type transl_type =
     Env.t -> Typetexp.policy -> Parsetree.core_type -> Typedtree.core_type
+  type transl_extension =
+    Env.t ->
+    Typetexp.policy ->
+    Parsetree.core_type ->
+    Parsetree.extension ->
+    Typedtree.core_type
 
   type base = {
     type_package : type_package;
     type_expect : type_expect;
     type_extension : type_extension;
     transl_type : transl_type;
+    transl_extension : transl_extension;
   }
 
   type t = {
@@ -62,6 +69,7 @@ module Hooks : sig
     type_expect : base -> type_expect;
     type_extension : base -> type_extension;
     transl_type : base -> transl_type;
+    transl_extension : base -> transl_extension;
   }
 
   val default : t
