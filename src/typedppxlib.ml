@@ -100,7 +100,9 @@ module Extension = struct
 
   module Context = struct
     type ('return, 'expected) t =
+      | Core_type : (Typedtree.core_type, unit) t
       | Expression : (Typedtree.expression, Typecore.type_expected) t
+    let core_type = Core_type
     let expression = Expression
   end
   type t =
@@ -128,17 +130,25 @@ module Extension = struct
         Hooks.default with
         type_extension =
           (fun super ?in_function ~recarg env expr expected
-               ((name, payload) as extension) ->
-            let Location.{ txt = name; loc = name_loc } = name in
+               (({ txt = name; loc = name_loc }, payload) as extension) ->
             match Hashtbl.find_opt instance name with
             (* TODO: which loc goes here *)
             | Some
                 (T ({ context = Expression; pattern = To_b; _ } as extension))
               ->
                 extension.expander ~loc:name_loc ~env ~expected payload
-            | None ->
+            | Some _ | None ->
                 super.type_extension ?in_function ~recarg env expr expected
                   extension);
+        transl_extension =
+          (fun super env policy styp
+               (({ txt = name; loc = name_loc }, payload) as extension) ->
+            match Hashtbl.find_opt instance name with
+            (* TODO: which loc goes here *)
+            | Some (T ({ context = Core_type; pattern = To_b; _ } as extension))
+              ->
+                extension.expander ~loc:name_loc ~env ~expected:() payload
+            | Some _ | None -> super.transl_extension env policy styp extension);
       }
     in
     Hooks.register hooks

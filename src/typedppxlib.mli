@@ -7,6 +7,7 @@ end
 module Extension : sig
   module Context : sig
     type ('return, 'expected) t
+    val core_type : (Typedtree.core_type, unit) t
     val expression : (Typedtree.expression, Typecore.type_expected) t
   end
   type t
