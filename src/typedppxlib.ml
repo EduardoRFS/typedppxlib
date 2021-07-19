@@ -22,17 +22,21 @@ module Hooks = struct
     Typecore.type_expected ->
     Parsetree.extension ->
     Typedtree.expression
+  type transl_type =
+    Env.t -> Typetexp.policy -> Parsetree.core_type -> Typedtree.core_type
 
   type base = {
     type_package : type_package;
     type_expect : type_expect;
     type_extension : type_extension;
+    transl_type : transl_type;
   }
 
   type t = {
     type_package : base -> type_package;
     type_expect : base -> type_expect;
     type_extension : base -> type_extension;
+    transl_type : base -> transl_type;
   }
 
   let default =
@@ -40,6 +44,7 @@ module Hooks = struct
       type_package = (fun super -> super.type_package);
       type_expect = (fun super -> super.type_expect);
       type_extension = (fun super -> super.type_extension);
+      transl_type = (fun super -> super.transl_type);
     }
 
   let instance =
@@ -48,6 +53,7 @@ module Hooks = struct
          type_package = !Typecore.type_package;
          type_expect = !Typecore.type_expect_ref;
          type_extension = !Typecore.type_extension_ref;
+         transl_type = !Typetexp.transl_type_ref;
        }
         : base)
   let register hook =
@@ -59,6 +65,7 @@ module Hooks = struct
         type_expect = (fun ?in_function -> hook.type_expect super ?in_function);
         type_extension =
           (fun ?in_function -> hook.type_extension super ?in_function);
+        transl_type = (fun env -> hook.transl_type super env);
       }
 
   (* register hooks *)
@@ -69,6 +76,7 @@ module Hooks = struct
   let () =
     Typecore.type_extension_ref :=
       fun ?in_function -> !instance.type_extension ?in_function
+  let () = Typetexp.transl_type_ref := fun env -> !instance.transl_type env
 end
 module Ast_pattern = struct
   type ('a, 'b, 'c) t = To_b : ('a, 'a -> 'b, 'b) t

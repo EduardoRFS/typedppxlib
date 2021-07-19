@@ -47,17 +47,21 @@ module Hooks : sig
     Typecore.type_expected ->
     Parsetree.extension ->
     Typedtree.expression
+  type transl_type =
+    Env.t -> Typetexp.policy -> Parsetree.core_type -> Typedtree.core_type
 
   type base = {
     type_package : type_package;
     type_expect : type_expect;
     type_extension : type_extension;
+    transl_type : transl_type;
   }
 
   type t = {
     type_package : base -> type_package;
     type_expect : base -> type_expect;
     type_extension : base -> type_extension;
+    transl_type : base -> transl_type;
   }
 
   val default : t
