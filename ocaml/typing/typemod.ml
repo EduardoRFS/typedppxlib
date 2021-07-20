@@ -2137,7 +2137,9 @@ and type_open_decl_aux ?used_slot ?toplevel funct_body names env od =
       open_attributes = od.popen_attributes
     } in
     open_descr, sg, newenv
-
+(* typedppxlib start *)
+and type_str_item_ref = ref (fun type_str_item ~toplevel:_ _ _ -> type_str_item)
+(* typedppxlib end *)
 and type_structure ?(toplevel = false) funct_body anchor env sstr =
   let names = Signature_names.create () in
 
@@ -2422,6 +2424,9 @@ and type_structure ?(toplevel = false) funct_body anchor env sstr =
         Builtin_attributes.warning_attribute x;
         Tstr_attribute x, [], env
   in
+  (* typedppxlib start *)
+  let type_str_item env str = !type_str_item_ref type_str_item ~toplevel funct_body anchor env str in
+  (* typedppxlib end *)
   let rec type_struct env sstr =
     match sstr with
     | [] -> ([], [], env)
