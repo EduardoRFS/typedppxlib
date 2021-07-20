@@ -186,30 +186,47 @@ module Error_recovery = struct
     fun () ->
       Btype.backtrack btype_snapshot;
       Ctype.set_levels ctype_levels
-
+  let recover_attr stri =
+    Parsetree.
+      {
+        attr_name = { txt = "**typedppxlib.recover**"; loc = Location.none };
+        attr_payload = PStr [ stri ];
+        attr_loc = Location.none;
+      }
   let () =
     let hooks =
       {
         Hooks.default with
+        type_expect =
+          (fun super ?in_function ?recarg env expr ty_expected ->
+            let reset = snapshot () in
+            try super.type_expect ?in_function ?recarg env expr ty_expected
+            with _exn ->
+              (* TODO: use this exception to something *)
+              reset ();
+              {
+                exp_desc = Texp_unreachable;
+                exp_loc = Location.none;
+                exp_extra = [];
+                exp_type = Ctype.newty (Tunivar None);
+                exp_attributes =
+                  [
+                    recover_attr
+                      {
+                        pstr_desc = Parsetree.Pstr_eval (expr, []);
+                        pstr_loc = Location.none;
+                      };
+                  ];
+                exp_env = env;
+              });
         type_str_item =
           (fun super ~toplevel funct_body anchor env str ->
-            let open Parsetree in
-            let open Typedtree in
             let reset = snapshot () in
             try super.type_str_item ~toplevel funct_body anchor env str
             with _exn ->
               (* TODO: how to handle exceptions *)
               reset ();
-              let attr =
-                {
-                  attr_name =
-                    { txt = "**typedppxlib.recover**"; loc = Location.none };
-                  attr_payload = PStr [ str ];
-                  attr_loc = Location.none;
-                }
-              in
-              let desc = Tstr_attribute attr in
-              (desc, [], env));
+              (Tstr_attribute (recover_attr str), [], env));
       }
     in
     Hooks.register hooks
@@ -218,6 +235,28 @@ module Error_recovery = struct
     let mapper =
       {
         Untypeast.default_mapper with
+        expr =
+          (fun sub expr ->
+            match expr with
+            | Typedtree.
+                {
+                  exp_attributes =
+                    [
+                      {
+                        attr_name = { txt = "**typedppxlib.recover**"; _ };
+                        attr_payload =
+                          PStr
+                            [
+                              { pstr_desc = Pstr_eval (expr, _); pstr_loc = _ };
+                            ];
+                        attr_loc = _;
+                      };
+                    ];
+                  exp_desc = Texp_unreachable;
+                  _;
+                } ->
+                expr
+            | _ -> Untypeast.default_mapper.expr sub expr);
         structure_item =
           (fun sub stri ->
             match stri.Typedtree.str_desc with
