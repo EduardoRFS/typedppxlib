@@ -75,6 +75,7 @@ module Hooks = struct
          type_extension = !Typecore.type_extension_ref;
          transl_type = !Typetexp.transl_type_ref;
          transl_extension = !Typetexp.transl_extension_ref;
+         (* TODO: that's not great because we ignore this parameters *)
          type_str_item = (fun ~toplevel:_ _ _ -> !type_str_item_source);
        }
         : base)
@@ -177,6 +178,61 @@ module Context_free = struct
     let extension t = t
   end
 end
+module Error_recovery = struct
+  open Typedppxlib_ocaml_typing
+  let snapshot () =
+    let btype_snapshot = Btype.snapshot () in
+    let ctype_levels = Ctype.save_levels () in
+    fun () ->
+      Btype.backtrack btype_snapshot;
+      Ctype.set_levels ctype_levels
+
+  let () =
+    let hooks =
+      {
+        Hooks.default with
+        type_str_item =
+          (fun super ~toplevel funct_body anchor env str ->
+            let open Parsetree in
+            let open Typedtree in
+            let reset = snapshot () in
+            try super.type_str_item ~toplevel funct_body anchor env str
+            with _exn ->
+              (* TODO: how to handle exceptions *)
+              reset ();
+              let attr =
+                {
+                  attr_name =
+                    { txt = "**typedppxlib.recover**"; loc = Location.none };
+                  attr_payload = PStr [ str ];
+                  attr_loc = Location.none;
+                }
+              in
+              let desc = Tstr_attribute attr in
+              (desc, [], env));
+      }
+    in
+    Hooks.register hooks
+
+  let untype =
+    let mapper =
+      {
+        Untypeast.default_mapper with
+        structure_item =
+          (fun sub stri ->
+            match stri.Typedtree.str_desc with
+            | Tstr_attribute
+                {
+                  attr_name = { txt = "**typedppxlib.recover**"; _ };
+                  attr_payload = PStr [ stri ];
+                  attr_loc = _;
+                } ->
+                stri
+            | _ -> Untypeast.default_mapper.structure_item sub stri);
+      }
+    in
+    fun tstr -> mapper.structure mapper tstr
+end
 module Transform = struct
   open Typedppxlib_ocaml_driver
   open Typedppxlib_ocaml_typing
@@ -195,7 +251,7 @@ module Transform = struct
     let env = Lazy.force_val env in
     let tstr, _, _, _ = Typemod.type_structure env str in
     let transform = !instance in
-    Untypeast.untype_structure (transform tstr)
+    Error_recovery.untype (transform tstr)
 end
 
 let registered = ref false
