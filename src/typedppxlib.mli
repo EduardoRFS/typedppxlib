@@ -56,6 +56,13 @@ module Hooks : sig
     Parsetree.core_type ->
     Parsetree.extension ->
     Typedtree.core_type
+  type type_str_item =
+    toplevel:bool ->
+    bool ->
+    Path.t option ->
+    Env.t ->
+    Parsetree.structure_item ->
+    Typedtree.structure_item_desc * Types.signature * Env.t
 
   type base = {
     type_package : type_package;
@@ -63,6 +70,7 @@ module Hooks : sig
     type_extension : type_extension;
     transl_type : transl_type;
     transl_extension : transl_extension;
+    type_str_item : type_str_item;
   }
 
   type t = {
@@ -71,6 +79,7 @@ module Hooks : sig
     type_extension : base -> type_extension;
     transl_type : base -> transl_type;
     transl_extension : base -> transl_extension;
+    type_str_item : base -> type_str_item;
   }
 
   val default : t
