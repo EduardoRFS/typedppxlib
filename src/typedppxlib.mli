@@ -9,6 +9,7 @@ module Extension : sig
     type ('return, 'expected) t
     val core_type : (Typedtree.core_type, unit) t
     val expression : (Typedtree.expression, Typecore.type_expected) t
+    val structure_item : (Typedtree.structure_item * Types.signature, unit) t
   end
   type t
 

@@ -117,19 +117,33 @@ end
 module Extension = struct
   open Typedppxlib_ocaml_typing
 
+  type ('a, 'b) eq = Eq : ('a, 'a) eq
   module Context = struct
     type ('return, 'expected) t =
       | Core_type : (Typedtree.core_type, unit) t
       | Expression : (Typedtree.expression, Typecore.type_expected) t
+      | Structure_item : (Typedtree.structure_item * Types.signature, unit) t
     let core_type = Core_type
     let expression = Expression
+    let structure_item = Structure_item
+
+    let is_equal :
+        type a a' b b'. (a, a') t -> (b, b') t -> (a * a', b * b') eq option =
+     fun a b ->
+      match (a, b) with
+      | Core_type, Core_type -> Some Eq
+      | Expression, Expression -> Some Eq
+      | Structure_item, Structure_item -> Some Eq
+      | _ -> None
   end
+  type ('return, 'expected) expander =
+    loc:Location.t -> env:Env.t -> expected:'expected -> 'return
   type t =
     | T : {
         name : string;
         context : ('return, 'expected) Context.t;
         pattern : (Parsetree.payload, 'a, 'return) Ast_pattern.t;
-        expander : loc:Location.t -> env:Env.t -> expected:'expected -> 'a;
+        expander : ('a, 'expected) expander;
       }
         -> t
   let declare name context pattern expander =
@@ -144,30 +158,55 @@ module Extension = struct
     | None -> Hashtbl.add instance extension.name (T extension)
 
   let () =
+    let find_expander :
+        type a a'.
+        (a, a') Context.t ->
+        string ->
+        (Parsetree.payload -> a, a') expander option =
+     fun expected_context name ->
+      match Hashtbl.find_opt instance name with
+      (* TODO: which loc goes here *)
+      | Some (T { context; pattern = To_b; expander; _ }) -> (
+          match Context.is_equal expected_context context with
+          | Some Eq -> Some expander
+          | None -> None)
+      | None -> None
+    in
     let hooks =
       {
         Hooks.default with
         type_extension =
           (fun super ?in_function ~recarg env expr expected
                (({ txt = name; loc = name_loc }, payload) as extension) ->
-            match Hashtbl.find_opt instance name with
+            match find_expander Expression name with
             (* TODO: which loc goes here *)
-            | Some
-                (T ({ context = Expression; pattern = To_b; _ } as extension))
-              ->
-                extension.expander ~loc:name_loc ~env ~expected payload
-            | Some _ | None ->
+            | Some expander -> expander ~loc:name_loc ~env ~expected payload
+            | None ->
                 super.type_extension ?in_function ~recarg env expr expected
                   extension);
         transl_extension =
           (fun super env policy styp
                (({ txt = name; loc = name_loc }, payload) as extension) ->
-            match Hashtbl.find_opt instance name with
+            match find_expander Core_type name with
             (* TODO: which loc goes here *)
-            | Some (T ({ context = Core_type; pattern = To_b; _ } as extension))
-              ->
-                extension.expander ~loc:name_loc ~env ~expected:() payload
-            | Some _ | None -> super.transl_extension env policy styp extension);
+            | Some expander -> expander ~loc:name_loc ~env ~expected:() payload
+            | None -> super.transl_extension env policy styp extension);
+        type_str_item =
+          (fun super ~toplevel funct_body anchor env stri ->
+            match stri.pstr_desc with
+            | Pstr_extension (({ txt = name; loc = name_loc }, payload), _attrs)
+              -> (
+                match find_expander Structure_item name with
+                (* TODO: which loc goes here *)
+                | Some expander ->
+                    let tstri, tsig =
+                      expander ~loc:name_loc ~env ~expected:() payload
+                    in
+                    (* TODO: preserve the loc by the user *)
+                    (tstri.str_desc, tsig, tstri.str_env)
+                | None ->
+                    super.type_str_item ~toplevel funct_body anchor env stri)
+            | _ -> super.type_str_item ~toplevel funct_body anchor env stri);
       }
     in
     Hooks.register hooks
