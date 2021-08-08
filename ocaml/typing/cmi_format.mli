@@ -49,3 +49,6 @@ exception Error of error
 open Format
 
 val report_error: formatter -> error -> unit
+
+(* typedppxlib *)
+val read_cmi_ref : (string -> cmi_infos) ref

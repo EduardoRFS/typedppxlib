@@ -82,6 +82,11 @@ let read_cmi filename =
       close_in ic;
       raise (Error e)
 
+(* typedppxlib start *)
+let read_cmi_ref = ref (read_cmi)
+let read_cmi filename = !read_cmi_ref filename
+(* typedppxlib end *)
+
 let output_cmi filename oc cmi =
 (* beware: the provided signature must have been substituted for saving *)
   output_string oc Config.cmi_magic_number;
