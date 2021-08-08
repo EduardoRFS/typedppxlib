@@ -64,6 +64,7 @@ module Hooks : sig
     Env.t ->
     Parsetree.structure_item ->
     Typedtree.structure_item_desc * Types.signature * Env.t
+  type read_cmi = string -> Cmi_format.cmi_infos
 
   type base = {
     type_package : type_package;
@@ -72,6 +73,7 @@ module Hooks : sig
     transl_type : transl_type;
     transl_extension : transl_extension;
     type_str_item : type_str_item;
+    read_cmi : read_cmi;
   }
 
   type t = {
@@ -81,6 +83,7 @@ module Hooks : sig
     transl_type : base -> transl_type;
     transl_extension : base -> transl_extension;
     type_str_item : base -> type_str_item;
+    read_cmi : base -> read_cmi;
   }
 
   val default : t

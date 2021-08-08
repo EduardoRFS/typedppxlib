@@ -37,6 +37,7 @@ module Hooks = struct
     Env.t ->
     Parsetree.structure_item ->
     Typedtree.structure_item_desc * Types.signature * Env.t
+  type read_cmi = string -> Cmi_format.cmi_infos
 
   type base = {
     type_package : type_package;
@@ -45,6 +46,7 @@ module Hooks = struct
     transl_type : transl_type;
     transl_extension : transl_extension;
     type_str_item : type_str_item;
+    read_cmi : read_cmi;
   }
 
   type t = {
@@ -54,6 +56,7 @@ module Hooks = struct
     transl_type : base -> transl_type;
     transl_extension : base -> transl_extension;
     type_str_item : base -> type_str_item;
+    read_cmi : base -> read_cmi;
   }
 
   let default =
@@ -64,6 +67,7 @@ module Hooks = struct
       transl_type = (fun super -> super.transl_type);
       transl_extension = (fun super -> super.transl_extension);
       type_str_item = (fun super -> super.type_str_item);
+      read_cmi = (fun super -> super.read_cmi);
     }
 
   let type_str_item_source = ref (fun _ -> assert false)
@@ -77,6 +81,7 @@ module Hooks = struct
          transl_extension = !Typetexp.transl_extension_ref;
          (* TODO: that's not great because we ignore this parameters *)
          type_str_item = (fun ~toplevel:_ _ _ -> !type_str_item_source);
+         read_cmi = !Cmi_format.read_cmi_ref;
        }
         : base)
   let register hook =
@@ -91,6 +96,7 @@ module Hooks = struct
         transl_type = (fun env -> hook.transl_type super env);
         transl_extension = (fun env -> hook.transl_extension super env);
         type_str_item = (fun ~toplevel -> hook.type_str_item super ~toplevel);
+        read_cmi = (fun filename -> hook.read_cmi super filename);
       }
 
   (* register hooks *)
@@ -109,6 +115,8 @@ module Hooks = struct
       fun type_str_item ->
         type_str_item_source := type_str_item;
         !instance.type_str_item
+  let () =
+    Cmi_format.read_cmi_ref := fun filename -> !instance.read_cmi filename
 end
 module Ast_pattern = struct
   type ('a, 'b, 'c) t = To_b : ('a, 'a -> 'b, 'b) t
