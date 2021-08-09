@@ -6,4 +6,4 @@
 
 (package
  (name typedppxlib)
- (depends ocaml ppxlib ppx_optcomp))
+ (depends ocaml ppxlib ppx_optcomp ocaml-migrate-types))

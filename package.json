@@ -8,7 +8,8 @@
     "ocaml": "*",
     "@opam/dune": "*",
     "@opam/ppxlib": "*",
-    "@opam/ppx_optcomp": "*"
+    "@opam/ppx_optcomp": "*",
+    "@opam/ocaml-migrate-types": "EduardoRFS/ocaml-migrate-types#faf7226dedd211a2621f03299f12c72b0b845310"
   },
   "devDependencies": {
     "ocaml": "4.12.x",
