@@ -1,4 +1,5 @@
 module Hooks = struct
+  open Typedppxlib_ocaml_parsing
   open Typedppxlib_ocaml_typing
 
   type type_package =
@@ -123,6 +124,7 @@ module Ast_pattern = struct
   let __ = To_b
 end
 module Extension = struct
+  open Typedppxlib_ocaml_parsing
   open Typedppxlib_ocaml_typing
 
   type ('a, 'b) eq = Eq : ('a, 'a) eq
@@ -226,6 +228,7 @@ module Context_free = struct
   end
 end
 module Error_recovery = struct
+  open Typedppxlib_ocaml_parsing
   open Typedppxlib_ocaml_typing
   let snapshot () =
     let btype_snapshot = Btype.snapshot () in
@@ -319,6 +322,76 @@ module Error_recovery = struct
     in
     fun tstr -> mapper.structure mapper tstr
 end
+
+[%%if ocaml_version < (4, 12, 0)]
+module Cmi_compatibility = struct
+  open Typedppxlib_ocaml_typing
+
+  (* TODO: this is copied from Cmi_format *)
+  let read_cmi filename =
+    let module Config = Ocaml_common.Config in
+    let open Ocaml_common.Cmi_format in
+    let ic = open_in_bin filename in
+    try
+      let buffer =
+        really_input_string ic (String.length Config.cmi_magic_number)
+      in
+      if buffer <> Config.cmi_magic_number then (
+        close_in ic;
+        let pre_len = String.length Config.cmi_magic_number - 3 in
+        if
+          String.sub buffer 0 pre_len
+          = String.sub Config.cmi_magic_number 0 pre_len
+        then
+          let msg =
+            if buffer < Config.cmi_magic_number then "an older" else "a newer"
+          in
+          raise (Error (Wrong_version_interface (filename, msg)))
+        else raise (Error (Not_an_interface filename)));
+      let cmi = input_cmi ic in
+      close_in ic;
+      cmi
+    with
+    | End_of_file | Failure _ ->
+        close_in ic;
+        raise (Error (Corrupted_interface filename))
+    | Error e ->
+        close_in ic;
+        raise (Error e)
+
+  let read_cmi filename =
+    let open Migrate_types in
+    let cmi = read_cmi filename in
+    let open struct
+      let cmi_sign = cmi.cmi_sign
+      [%%if ocaml_version <= (4, 09, 0)]
+      let cmi_sign = Migrate_408_409.copy_signature cmi_sign
+      [%%endif]
+      [%%if ocaml_version <= (4, 10, 0)]
+      let cmi_sign = Migrate_409_410.copy_signature cmi_sign
+      [%%endif]
+      [%%if ocaml_version <= (4, 11, 0)]
+      let cmi_sign = Migrate_410_411.copy_signature cmi_sign
+      [%%endif]
+      [%%if ocaml_version <= (4, 12, 0)]
+      let cmi_sign = Migrate_411_412.copy_signature cmi_sign
+      [%%endif]
+    end in
+    (* TODO: check this on every update *)
+    let cmi_sign : Types_412.Types.signature = cmi_sign in
+    let cmi_sign : Types.signature = Obj.magic cmi_sign in
+    Cmi_format.
+      {
+        cmi_name = cmi.cmi_name;
+        cmi_sign;
+        cmi_crcs = cmi.cmi_crcs;
+        (* TODO: check this on every update *)
+        cmi_flags = Obj.magic cmi.cmi_flags;
+      }
+  let () = Hooks.register { Hooks.default with read_cmi = (fun _ -> read_cmi) }
+end
+[%%endif]
+
 module Transform = struct
   open Typedppxlib_ocaml_driver
   open Typedppxlib_ocaml_typing

@@ -1,4 +1,6 @@
+open Typedppxlib_ocaml_parsing
 open Typedppxlib_ocaml_typing
+
 module Ast_pattern : sig
   type ('a, 'b, 'c) t
 
