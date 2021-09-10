@@ -1,0 +1,19 @@
+(library
+ (name ppx_overload)
+ (public_name ppx_overload)
+ (kind ppx_rewriter)
+ (modules Ppx_overload)
+ (libraries typedppxlib))
+
+(executable
+ (name test)
+ (modules Test)
+ (libraries base)
+ (preprocess
+  (staged_pps ppx_overload)))
+
+(rule
+ (alias runtest)
+ (deps ./test.exe)
+ (action
+  (run ./test.exe)))
