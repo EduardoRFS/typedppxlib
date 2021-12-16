@@ -34,8 +34,8 @@ module Hooks : sig
     Env.t ->
     Parsetree.module_expr ->
     Path.t ->
-    Longident.t list ->
-    Typedtree.module_expr * Types.type_expr list
+    (Longident.t * Types.type_expr) list ->
+    Typedtree.module_expr * (Longident.t * Types.type_expr) list
   type type_expect =
     ?in_function:Warnings.loc * Types.type_expr ->
     ?recarg:Typecore.recarg ->

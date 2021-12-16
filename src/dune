@@ -3,6 +3,7 @@
  (public_name typedppxlib)
  (libraries
   ppxlib
+  ppxlib.astlib
   typedppxlib_ocaml_driver
   typedppxlib_ocaml_typing
   ocaml-migrate-types)

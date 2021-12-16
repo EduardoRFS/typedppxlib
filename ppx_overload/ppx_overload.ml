@@ -1,6 +1,8 @@
 open Ppxlib
 open Typedppxlib
 open Typedppxlib_ocaml_typing
+open Typedppxlib_ocaml_parsing
+open Parsetree
 
 let expr_is_error expr =
   match expr.Typedtree.exp_attributes with
@@ -38,8 +40,7 @@ let type_expect (super : Hooks.base) ?in_function ?recarg env expr expected =
                 let expr = { expr with pexp_desc = Pexp_apply (left, args) } in
                 let result = type_exp expr in
                 if expr_is_error result then None else Some result
-            | None ->
-                acc)
+            | None -> acc)
           None env None
         |> Option.value ~default:original_result
       else original_result

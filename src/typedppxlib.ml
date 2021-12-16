@@ -6,8 +6,8 @@ module Hooks = struct
     Env.t ->
     Parsetree.module_expr ->
     Path.t ->
-    Longident.t list ->
-    Typedtree.module_expr * Types.type_expr list
+    (Longident.t * Types.type_expr) list ->
+    Typedtree.module_expr * (Longident.t * Types.type_expr) list
   type type_expect =
     ?in_function:Warnings.loc * Types.type_expr ->
     ?recarg:Typecore.recarg ->
@@ -323,7 +323,7 @@ module Error_recovery = struct
     fun tstr -> mapper.structure mapper tstr
 end
 
-[%%if ocaml_version < (4, 12, 0)]
+[%%if ocaml_version < (4, 13, 0)]
 module Cmi_compatibility = struct
   open Typedppxlib_ocaml_typing
 
@@ -364,21 +364,24 @@ module Cmi_compatibility = struct
     let cmi = read_cmi filename in
     let open struct
       let cmi_sign = cmi.cmi_sign
-      [%%if ocaml_version <= (4, 09, 0)]
+      [%%if ocaml_version < (4, 09, 0)]
       let cmi_sign = Migrate_408_409.copy_signature cmi_sign
       [%%endif]
-      [%%if ocaml_version <= (4, 10, 0)]
+      [%%if ocaml_version < (4, 10, 0)]
       let cmi_sign = Migrate_409_410.copy_signature cmi_sign
       [%%endif]
-      [%%if ocaml_version <= (4, 11, 0)]
+      [%%if ocaml_version < (4, 11, 0)]
       let cmi_sign = Migrate_410_411.copy_signature cmi_sign
       [%%endif]
-      [%%if ocaml_version <= (4, 12, 0)]
+      [%%if ocaml_version < (4, 12, 0)]
       let cmi_sign = Migrate_411_412.copy_signature cmi_sign
+      [%%endif]
+      [%%if ocaml_version < (4, 13, 0)]
+      let cmi_sign = Migrate_412_413.copy_signature cmi_sign
       [%%endif]
     end in
     (* TODO: check this on every update *)
-    let cmi_sign : Types_412.Types.signature = cmi_sign in
+    let cmi_sign : Types_413.Types.signature = cmi_sign in
     let cmi_sign : Types.signature = Obj.magic cmi_sign in
     Cmi_format.
       {
@@ -411,6 +414,36 @@ module Transform = struct
     let tstr, _, _, _ = Typemod.type_structure env str in
     let transform = !instance in
     Error_recovery.untype (transform tstr)
+
+  (* ppxlib wrapper*)
+  let of_ppxlib_structure, to_ppxlib_structure =
+    let (module Ppxlib_current_version) =
+      match Ppxlib_ast.Find_version.from_magic Config.ast_impl_magic_number with
+      | Impl impl -> impl
+      | _ -> failwith "incompatible ppxlib version"
+    in
+    let of_ppxlib_current_version_structure :
+        Ppxlib_current_version.Ast.Parsetree.structure ->
+        Typedppxlib_ocaml_parsing.Parsetree.structure =
+      Obj.magic
+    in
+    let to_ppxlib_current_version_structure :
+        Typedppxlib_ocaml_parsing.Parsetree.structure ->
+        Ppxlib_current_version.Ast.Parsetree.structure =
+      Obj.magic
+    in
+
+    let module Selected_ast = Ppxlib_ast.Select_ast (Ppxlib_current_version) in
+    let of_ppxlib_structure ppxlib_str =
+      of_ppxlib_current_version_structure
+        (Selected_ast.to_ocaml Structure ppxlib_str)
+    in
+    let to_ppxlib_structure str =
+      Selected_ast.of_ocaml Structure (to_ppxlib_current_version_structure str)
+    in
+    (of_ppxlib_structure, to_ppxlib_structure)
+  let transform ppxlib_str =
+    ppxlib_str |> of_ppxlib_structure |> transform |> to_ppxlib_structure
 end
 
 let registered = ref false
