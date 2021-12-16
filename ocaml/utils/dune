@@ -1,4 +1,6 @@
 (library
  (name typedppxlib_ocaml_utils)
  (public_name typedppxlib.ocaml.utils)
- (libraries ocaml-compiler-libs.common))
+ (libraries ocaml-compiler-libs.common typedppxlib_ocaml_stdlib)
+ (flags
+  (:standard -open Typedppxlib_ocaml_stdlib)))

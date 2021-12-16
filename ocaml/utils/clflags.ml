@@ -14,9 +14,17 @@
 (**************************************************************************)
 
 (* Command-line parameters *)
+
 include Ocaml_common.Clflags
 
+let output_complete_executable = ref false  (* -output-complete-exe *)
+
+and plugin = ref false                      (* -plugin ... *)
+
 let locations = ref true                (* -d(no-)locations *)
+
+let cmm_invariants =
+  ref Config.with_cmm_invariants        (* -dcmm-invariants *)
 
 let insn_sched_default = true
 let insn_sched = ref insn_sched_default (* -[no-]insn-sched *)
@@ -24,10 +32,6 @@ let insn_sched = ref insn_sched_default (* -[no-]insn-sched *)
 let with_runtime = ref true;;         (* -with-runtime *)
 
 let function_sections = ref false      (* -function-sections *)
-
-let output_complete_executable = ref false
-
-and plugin = ref false                  (* -plugin ... *)
 
 type 'a env_reader = {
   parse : string -> 'a option;
@@ -113,7 +117,7 @@ module Compiler_pass = struct
   (* If you add a new pass, the following must be updated:
      - the variable `passes` below
      - the manpages in man/ocaml{c,opt}.m
-     - the manual manual/manual/cmds/unified-options.etex
+     - the manual manual/src/cmds/unified-options.etex
   *)
   type t = Parsing | Typing | Scheduling | Emit
 
@@ -197,14 +201,32 @@ let set_save_ir_after pass enabled =
   in
   save_ir_after := new_passes
 
-(* This function is almost the same as [Arg.parse_expand], except
-   that [Arg.parse_expand] could not be used because it does not take a
-   reference for [arg_spec].*)
-let parse_arguments argv f msg =
-  try
-    let argv = ref argv in
-    let current = ref 0 in
-    Arg.parse_and_expand_argv_dynamic current argv arg_spec f msg
-  with
-  | Arg.Bad msg -> Printf.eprintf "%s" msg; exit 2
-  | Arg.Help msg -> Printf.printf "%s" msg; exit 0
+module String = Misc.Stdlib.String
+
+let arg_spec = ref []
+let arg_names = ref String.Map.empty
+
+let reset_arguments () =
+  arg_spec := [];
+  arg_names := String.Map.empty
+
+let add_arguments loc args =
+  List.iter (function (arg_name, _, _) as arg ->
+    try
+      let loc2 = String.Map.find arg_name !arg_names in
+      Printf.eprintf
+        "Warning: compiler argument %s is already defined:\n" arg_name;
+      Printf.eprintf "   First definition: %s\n" loc2;
+      Printf.eprintf "   New definition: %s\n" loc;
+    with Not_found ->
+      arg_spec := !arg_spec @ [ arg ];
+      arg_names := String.Map.add arg_name loc !arg_names
+  ) args
+
+let create_usage_msg program =
+  Printf.sprintf "Usage: %s <options> <files>\n\
+    Try '%s --help' for more information." program program
+
+
+let print_arguments program =
+  Arg.usage !arg_spec (create_usage_msg program)

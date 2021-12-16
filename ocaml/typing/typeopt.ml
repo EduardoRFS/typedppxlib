@@ -26,7 +26,8 @@ let scrape_ty env ty =
   match ty.desc with
   | Tconstr (p, _, _) ->
       begin match Env.find_type p env with
-      | {type_unboxed = {unboxed = true; _}; _} ->
+      | {type_kind = ( Type_variant (_, Variant_unboxed)
+                     | Type_record (_, Record_unboxed _) ); _} ->
         begin match Typedecl.get_unboxed_type_representation env ty with
         | None -> ty
         | Some ty2 -> ty2
@@ -122,7 +123,7 @@ let array_pattern_kind pat = array_type_kind pat.pat_env pat.pat_type
 let bigarray_decode_type env ty tbl dfl =
   match scrape env ty with
   | Tconstr(Pdot(Pident mod_id, type_name), [], _)
-    when Ident.name mod_id = "Stdlib__bigarray" ->
+    when Ident.name mod_id = "Stdlib__Bigarray" ->
       begin try List.assoc type_name tbl with Not_found -> dfl end
   | _ ->
       dfl

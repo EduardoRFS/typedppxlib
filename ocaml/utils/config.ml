@@ -17,6 +17,8 @@
 (* The main OCaml version string has moved to ../VERSION *)
 let version = Sys.ocaml_version
 
+let bindir = "/usr/local/bin"
+
 let standard_library_default = "/usr/local/lib/ocaml"
 
 let standard_library =
@@ -33,13 +35,13 @@ let c_compiler = "gcc"
 let c_output_obj = "-o "
 let c_has_debug_prefix_map = true
 let as_has_debug_prefix_map = true
-let ocamlc_cflags = "-O2 -fno-strict-aliasing -fwrapv -fPIC "
-let ocamlc_cppflags = "-D_FILE_OFFSET_BITS=64 -D_REENTRANT "
+let ocamlc_cflags = "-O2 -fno-strict-aliasing -fwrapv -pthread -fPIC "
+let ocamlc_cppflags = "-D_FILE_OFFSET_BITS=64 "
 (* #7678: ocamlopt uses these only to compile .c files, and the behaviour for
           the two drivers should be identical. *)
-let ocamlopt_cflags = "-O2 -fno-strict-aliasing -fwrapv -fPIC "
-let ocamlopt_cppflags = "-D_FILE_OFFSET_BITS=64 -D_REENTRANT "
-let bytecomp_c_libraries = "-lm -ldl  -lpthread "
+let ocamlopt_cflags = "-O2 -fno-strict-aliasing -fwrapv -pthread -fPIC "
+let ocamlopt_cppflags = "-D_FILE_OFFSET_BITS=64 "
+let bytecomp_c_libraries = "-lm -ldl  -lpthread"
 (* bytecomp_c_compiler and native_c_compiler have been supported for a
    long time and are retained for backwards compatibility.
    For programs that don't need compatibility with older OCaml releases
@@ -53,58 +55,61 @@ let native_c_compiler =
 let native_c_libraries = "-lm -ldl "
 let native_pack_linker = "ld -r -o "
 let ranlib = "ranlib"
+let default_rpath = "-Wl,-rpath,"
+let mksharedlibrpath = "-Wl,-rpath,"
 let ar = "ar"
+let supports_shared_libraries = true
 let mkdll, mkexe, mkmaindll =
   (* @@DRA Cygwin - but only if shared libraries are enabled, which we
      should be able to detect? *)
-  if Sys.os_type = "Win32" then
+  if Sys.win32 || Sys.cygwin && supports_shared_libraries then
     try
       let flexlink =
         let flexlink = Sys.getenv "OCAML_FLEXLINK" in
         let f i =
           let c = flexlink.[i] in
-          if c = '/' then '\\' else c in
+          if c = '/' && Sys.win32 then '\\' else c in
         (String.init (String.length flexlink) f) ^ " " in
       flexlink ^ "",
       flexlink ^ " -exe -link \"-Wl,-E\"",
       flexlink ^ " -maindll"
     with Not_found ->
-      "gcc -shared", "gcc -O2 -fno-strict-aliasing -fwrapv -Wall -Wdeclaration-after-statement -fno-common -fexcess-precision=standard -fno-tree-vrp -ffunction-sections  -Wl,-E", "gcc -shared"
+      "gcc -shared ", "gcc -O2 -fno-strict-aliasing -fwrapv -pthread -Wall -Wdeclaration-after-statement -Werror -fno-common -fexcess-precision=standard -fno-tree-vrp -ffunction-sections  -Wl,-E ", "gcc -shared "
   else
-    "gcc -shared", "gcc -O2 -fno-strict-aliasing -fwrapv -Wall -Wdeclaration-after-statement -fno-common -fexcess-precision=standard -fno-tree-vrp -ffunction-sections  -Wl,-E", "gcc -shared"
+    "gcc -shared ", "gcc -O2 -fno-strict-aliasing -fwrapv -pthread -Wall -Wdeclaration-after-statement -Werror -fno-common -fexcess-precision=standard -fno-tree-vrp -ffunction-sections  -Wl,-E ", "gcc -shared "
 
 let flambda = false
 let with_flambda_invariants = false
+let with_cmm_invariants = false
 let safe_string = true
 let default_safe_string = true
 let windows_unicode = 0 != 0
-let supports_shared_libraries = true
 
 let flat_float_array = true
 
 let function_sections = true
 let afl_instrument = false
 
-let exec_magic_number = "Caml1999X029"
+let exec_magic_number = "Caml1999X030"
     (* exec_magic_number is duplicated in runtime/caml/exec.h *)
-and cmi_magic_number = "Caml1999I029"
-and cmo_magic_number = "Caml1999O029"
-and cma_magic_number = "Caml1999A029"
+and cmi_magic_number = "Caml1999I030"
+and cmo_magic_number = "Caml1999O030"
+and cma_magic_number = "Caml1999A030"
 and cmx_magic_number =
   if flambda then
-    "Caml1999y029"
+    "Caml1999y030"
   else
-    "Caml1999Y029"
+    "Caml1999Y030"
 and cmxa_magic_number =
   if flambda then
-    "Caml1999z029"
+    "Caml1999z030"
   else
-    "Caml1999Z029"
-and ast_impl_magic_number = "Caml1999M029"
-and ast_intf_magic_number = "Caml1999N029"
-and cmxs_magic_number = "Caml1999D029"
-and cmt_magic_number = "Caml1999T029"
-and linear_magic_number = "Caml1999L029"
+    "Caml1999Z030"
+and ast_impl_magic_number = "Caml1999M030"
+and ast_intf_magic_number = "Caml1999N030"
+and cmxs_magic_number = "Caml1999D030"
+and cmt_magic_number = "Caml1999T030"
+and linear_magic_number = "Caml1999L030"
 
 let interface_suffix = ref ".mli"
 

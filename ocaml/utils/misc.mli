@@ -370,6 +370,8 @@ module Color : sig
     | Bold
     | Reset
 
+  type Format.stag += Style of style list
+
   val ansi_of_style_l : style list -> string
   (* ANSI escape sequence for the given style *)
 
@@ -463,29 +465,6 @@ type modname = string
 type crcs = (modname * Digest.t option) list
 
 type alerts = string Stdlib.String.Map.t
-
-
-module EnvLazy: sig
-  type ('a,'b) t
-
-  type log
-
-  val force : ('a -> 'b) -> ('a,'b) t -> 'b
-  val create : 'a -> ('a,'b) t
-  val get_arg : ('a,'b) t -> 'a option
-  val create_forced : 'b -> ('a, 'b) t
-  val create_failed : exn -> ('a, 'b) t
-
-  (* [force_logged log f t] is equivalent to [force f t] but if [f]
-     returns [Error _] then [t] is recorded in [log]. [backtrack log]
-     will then reset all the recorded [t]s back to their original
-     state. *)
-  val log : unit -> log
-  val force_logged :
-    log -> ('a -> ('b, 'c) result) -> ('a,('b, 'c) result) t -> ('b, 'c) result
-  val backtrack : log -> unit
-
-end
 
 
 module Magic_number : sig
