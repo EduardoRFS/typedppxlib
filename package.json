@@ -9,7 +9,7 @@
     "@opam/dune": "*",
     "@opam/ppxlib": "*",
     "@opam/ppx_optcomp": "*",
-    "@opam/ocaml-migrate-types": "EduardoRFS/ocaml-migrate-types#faf7226dedd211a2621f03299f12c72b0b845310"
+    "@opam/ocaml-migrate-types": "EduardoRFS/ocaml-migrate-types#ede96324676aa57256326f80da1ec57a4f6206f0"
   },
   "devDependencies": {
     "ocaml": "4.12.x",
