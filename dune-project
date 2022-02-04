@@ -11,3 +11,7 @@
 (package
  (name ppx_overload)
  (depends typedppxlib))
+
+(package
+ (name ppx_debug)
+ (depends typedppxlib))
