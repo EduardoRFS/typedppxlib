@@ -12,7 +12,7 @@
  (name ppx_debug_runtime)
  (public_name ppx_debug.runtime)
  (modules Ppx_debug_runtime)
- (libraries typedppxlib ppx_debug_runtime_data))
+ (libraries typedppxlib ppx_debug_runtime_data unix))
 
 (library
  (name ppx_debug_runtime_data)
@@ -23,7 +23,7 @@
 (executable
  (name test)
  (modules Test)
- (libraries base)
+ (libraries base compiler-libs)
  (preprocess
   (staged_pps ppx_debug)))
 

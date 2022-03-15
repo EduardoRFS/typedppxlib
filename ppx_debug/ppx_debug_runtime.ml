@@ -1,5 +1,9 @@
 open Typedppxlib_ocaml_typing
 
+(* TODO: this just force to patch stuff like read_cmi *)
+include Typedppxlib
+
+let () = Printexc.record_backtrace false
 type runtime_data
 
 (* TODO: better API for lazy printing *)
@@ -7,18 +11,70 @@ type runtime_data
 let fprintf = Format.fprintf
 
 (* TODO: OCaml can also be instrumented to have the types be known
-         at me for handling polymorphism*)
+         at runtime for handling polymorphism*)
 (* TODO: this could actually be a generated piece of bytecode / native OCaml
          as there is no allocation it is mostly safe *)
 type name = string
+
+(* module Cycle_tbl : sig
+     type t
+     val make : unit -> t
+     val mark : t -> 'a -> unit
+     val find : t -> 'a -> int option
+   end = struct
+     type id = int
+     type content = {
+       key : Obj.t;
+       id : id;
+     }
+     type t = {
+       mutable next_id : id;
+       table : (Obj.t, content) Hashtbl.t;
+     }
+
+     let make () =
+       let next_id = 0 in
+       let table = Hashtbl.create 16 in
+       { next_id; table }
+
+     let find t obj =
+       match Hashtbl.find_opt t.table obj with
+       | Some content ->
+         if content.key == obj then
+           Some content
+         else
+           List.find_opt
+             (fun content -> content.key == obj)
+             (Hashtbl.find_all t.table obj)
+       | None -> None
+     let mem t obj =
+       match find t obj with
+       | Some _content -> true
+       | None -> false
+
+     let mark t obj =
+       let obj = Obj.repr obj in
+       if Obj.is_int obj || mem t obj then
+         ()
+       else
+         let id = t.next_id in
+         t.next_id <- id + 1;
+         let content = { key = obj; id } in
+         Hashtbl.add t.table obj content
+     let find t obj =
+       let obj = Obj.repr obj in
+       match find t obj with
+       | Some content -> Some content.id
+       | None -> None
+   end *)
 
 module Printing_ir = struct
   (* IR to simplify printing *)
   (* TOOD: how much of it should be built on compile time? *)
   type t = {
-    id : int;
     typ : name;
-    desc : desc;
+    mutable desc : desc;
+    mutable print : (Format.formatter -> Obj.t -> unit) option;
   }
   and desc =
     | Int
@@ -51,16 +107,11 @@ module Printing_ir = struct
     | Variant       of {
         unboxed : bool;
         constants : name array;
-        blocks : (name * t) array;
+        blocks : (name * desc) array;
       }
-
-  let make =
-    let acc = ref 0 in
-    fun typ desc ->
-      let id = !acc in
-      incr acc;
-      { id; typ; desc }
+  let make typ desc = { typ; desc; print = None }
 end
+module Int_map = Map.Make (Int)
 module Printer = struct
   open Printing_ir
 
@@ -182,7 +233,23 @@ module Printer = struct
 
   (* TODO: cycle detection both on types and on values *)
   let rec print_value printing_ir =
-    let { id = _; typ; desc } = printing_ir in
+    let { typ; desc; print } = printing_ir in
+    match print with
+    | Some print -> print
+    | None ->
+      (* setup *)
+      let print_ref = ref (fun _ -> assert false) in
+      printing_ir.print <- Some (fun fmt obj -> !print_ref fmt obj);
+
+      (* construct *)
+      let print = print_value_desc typ desc in
+      print_ref := print;
+      (* path compression *)
+      printing_ir.print <- Some print;
+
+      print
+
+  and print_value_desc typ desc =
     match desc with
     | Int -> int
     | Char -> char
@@ -216,24 +283,66 @@ module Printer = struct
       | false, _, _ ->
         ()
       | true, _, _ -> failwith "bug");
-      let blocks = Array.map (fun (name, ir) -> (name, print_value ir)) blocks in
+      let blocks =
+        Array.map
+          (fun (name, ir) ->
+            let print = print_value_desc typ ir in
+            (name, print))
+          blocks in
       variant ~constants ~blocks
 end
 
 module Translate_typ = struct
   open Types
 
+  module Path_map = Map.Make (Path)
+  module Ids_map = Map.Make (struct
+    type t = int list
+    let compare = compare
+  end)
+  module Translate_context = struct
+    type t = {
+      env : Env.t;
+      mutable types : Printing_ir.t Int_map.t;
+      mutable constructors : Printing_ir.t Ids_map.t Path_map.t;
+    }
+
+    let make ~env =
+      { env; types = Int_map.empty; constructors = Path_map.empty }
+
+    let add_type t typ ir = t.types <- Int_map.add typ.id ir t.types
+    let find_type t typ = Int_map.find_opt typ.id t.types
+
+    let ids_of_args typ =
+      List.rev_map (fun typ -> (Transient_expr.repr typ).id) typ
+    let add_constr path args ir t =
+      let rev_args_map =
+        match Path_map.find_opt path t.constructors with
+        | Some rev_args_map -> rev_args_map
+        | None -> Ids_map.empty in
+
+      let rev_args = ids_of_args args in
+      let rev_args_map = Ids_map.add rev_args ir rev_args_map in
+      t.constructors <- Path_map.add path rev_args_map t.constructors
+
+    let find_constr t path args =
+      match Path_map.find_opt path t.constructors with
+      | Some rev_args_map -> (
+        let rev_args = ids_of_args args in
+
+        match Ids_map.find_opt rev_args rev_args_map with
+        | Some printing_ir -> Some printing_ir
+        | None -> None)
+      | None -> None
+  end
   let ir typ =
-    let typ = Format.asprintf "%a\n%!" Printtyp.type_expr typ in
+    let typ =
+      Format.asprintf "%a" Printtyp.type_expr (Transient_expr.type_expr typ)
+    in
     Printing_ir.make typ
 
-  let apply_typ_fields env ~params ~args fields =
+  let apply_typ_args env ~params ~args typ =
     let open Ctype in
-    begin_def ();
-    let typ = newty (Ttuple fields) in
-    end_def ();
-    generalize typ;
-
     (* TODO: should I use apply here? *)
     (* TODO: this is needed to ensure that instance generates a new instance *)
     let params, typ = instance_parameterized_type ~keep_names:true params typ in
@@ -241,86 +350,115 @@ module Translate_typ = struct
     (* TODO: this may fail *)
     let param_arg_pairs = List.combine params args in
     List.iter (fun (param, arg) -> unify env param arg) param_arg_pairs;
-    typ
+    Transient_expr.repr typ
+
+  let apply_typ_fields env ~params ~args fields =
+    let open Ctype in
+    begin_def ();
+    let typ = newty (Ttuple fields) in
+    end_def ();
+    generalize typ;
+    apply_typ_args env ~params ~args typ
 
   let apply_typ_labels env ~params ~args labels =
     let fields = List.map (fun ld -> ld.ld_type) labels in
     let body = apply_typ_fields env ~params ~args fields in
-    match (Ctype.repr body).desc with
+    match body.desc with
     | Ttuple types -> List.combine labels types
     | _ -> assert false
 
-  let rec translate_typ env typ =
-    let translate_typ typ = translate_typ env typ in
+  let rec translate_typ ctx typ =
+    let typ = Transient_expr.repr typ in
 
+    match Translate_context.find_type ctx typ with
+    | Some ir -> ir
+    | None ->
+    (* TODO: this is clearly bad code *)
+    match typ.desc with
+    | Tconstr (path, args, _abbrev) -> (
+      match Translate_context.find_constr ctx path args with
+      | Some ir -> ir
+      | None ->
+        let ir = ir typ Unit in
+
+        Translate_context.add_type ctx typ ir;
+        Translate_context.add_constr path args ir ctx;
+
+        let desc = translate_typ_desc ctx typ in
+        ir.desc <- desc;
+
+        ir)
+    | _ ->
+      let ir = ir typ Unit in
+
+      Translate_context.add_type ctx typ ir;
+
+      let desc = translate_typ_desc ctx typ in
+      ir.desc <- desc;
+
+      ir
+
+  and translate_typ_desc ctx typ =
     match typ.desc with
     (* TODO: any way to print vars? *)
-    | Tvar name -> ir typ (Var { name })
-    | Tarrow _ -> ir typ Arrow
+    | Tvar name -> Var { name }
+    | Tarrow _ -> Arrow
     | Ttuple fields ->
-      let fields = List.map translate_typ fields in
-      ir typ (Tuple { fields })
+      let fields = List.map (fun typ -> translate_typ ctx typ) fields in
+      Tuple { fields }
     (* TODO: what to use the abbrev *)
-    | Tconstr (path, args, _abbrev) -> translate_constr env typ path args
+    | Tconstr (path, args, _abbrev) -> translate_constr ctx path args
     | Tobject _
     | Tfield _
     | Tnil ->
-      ir typ Unimplemented
-    | Tlink typ -> translate_typ typ
+      Unimplemented
+    | Tlink _ -> failwith "unreachable"
     (* TODO: when is Tsubst used? *)
     | Tsubst _
     | Tvariant _
     | Tunivar _
     | Tpoly _
     | Tpackage _ ->
-      ir typ Unimplemented
+      Unimplemented
 
-  and translate_constr env typ path args =
+  and translate_constr ctx path args =
     let open Predef in
-    let translate_typ typ = translate_typ env typ in
-    let ir desc = ir typ desc in
     match (path, args) with
-    | _, [] when path = path_int -> ir Int
-    | _, [] when path = path_char -> ir Char
-    | _, [] when path = path_string -> ir String
-    | _, [] when path = path_bytes -> ir Bytes
-    | _, [] when path = path_float -> ir Float
-    | _, [] when path = path_bool -> ir Bool
-    | _, [] when path = path_unit -> ir Unit
-    | _, [] when path = path_exn -> ir Exn
-    | _, [arg] when path = path_array -> ir (Array (translate_typ arg))
-    | _, [arg] when path = path_list -> ir (List (translate_typ arg))
-    | _, [arg] when path = path_option -> ir (Option (translate_typ arg))
-    | _, [] when path = path_nativeint -> ir Nativeint
-    | _, [] when path = path_int32 -> ir Int32
-    | _, [] when path = path_int64 -> ir Int64
-    | _, [arg] when path = path_lazy_t -> ir (Lazy_t (translate_typ arg))
+    | _, [] when path = path_int -> Int
+    | _, [] when path = path_char -> Char
+    | _, [] when path = path_string -> String
+    | _, [] when path = path_bytes -> Bytes
+    | _, [] when path = path_float -> Float
+    | _, [] when path = path_bool -> Bool
+    | _, [] when path = path_unit -> Unit
+    | _, [] when path = path_exn -> Exn
+    | _, [arg] when path = path_array -> Array (translate_typ ctx arg)
+    | _, [arg] when path = path_list -> List (translate_typ ctx arg)
+    | _, [arg] when path = path_option -> Option (translate_typ ctx arg)
+    | _, [] when path = path_nativeint -> Nativeint
+    | _, [] when path = path_int32 -> Int32
+    | _, [] when path = path_int64 -> Int64
+    | _, [arg] when path = path_lazy_t -> Lazy_t (translate_typ ctx arg)
     | _ -> (
-      let decl = Env.find_type path env in
+      let decl = Env.find_type path ctx.env in
       match decl.type_kind with
-      | Type_abstract -> translate_abstract env typ decl args
+      | Type_abstract -> translate_abstract ctx decl args
       | Type_record (fields, representation) ->
-        translate_record env typ decl fields representation args
+        translate_record ctx decl fields representation args
       | Type_variant (constructors, representation) ->
-        translate_variant env typ decl constructors representation args
-      | Type_open -> ir Unimplemented)
+        translate_variant ctx decl constructors representation args
+      | Type_open -> Unimplemented)
 
-  and translate_abstract env typ decl args =
-    let open Ctype in
+  and translate_abstract ctx decl args =
     match decl.type_manifest with
     | Some body ->
-      (* TODO: should I use apply here? *)
-      let params, body =
-        instance_parameterized_type ~keep_names:true decl.type_params body in
+      let params = decl.type_params in
+      let body = apply_typ_args ctx.env ~params ~args body in
 
-      (* TODO: this may fail *)
-      let param_arg_pairs = List.combine params args in
-      List.iter (fun (param, arg) -> unify env param arg) param_arg_pairs;
+      translate_typ_desc ctx body
+    | None -> Abstract
 
-      translate_typ env body
-    | None -> ir typ Abstract
-
-  and translate_record env typ decl fields representation args =
+  and translate_record ctx decl fields representation args =
     (* TODO: this function looks very bad *)
     let unboxed =
       match representation with
@@ -331,17 +469,17 @@ module Translate_typ = struct
       | Record_extension _ ->
         false in
 
-    let types = apply_typ_labels env ~params:decl.type_params ~args fields in
+    let types = apply_typ_labels ctx.env ~params:decl.type_params ~args fields in
     let fields =
       List.map
         (fun (ld, typ) ->
           let name = Ident.name ld.ld_id in
-          (name, translate_typ env typ))
+          (name, translate_typ ctx typ))
         types in
-    ir typ (Record { unboxed; fields })
+    Record { unboxed; fields }
 
-  and translate_variant env typ decl constructors representation args =
-    let translate_typ typ = translate_typ env typ in
+  and translate_variant ctx decl constructors representation args =
+    let translate_typ typ = translate_typ ctx typ in
     let unboxed =
       match representation with
       | Variant_unboxed -> true
@@ -365,14 +503,14 @@ module Translate_typ = struct
           let body =
             match cd.cd_args with
             | Cstr_tuple fields -> (
-              let body = apply_typ_fields env ~params ~args fields in
-              let body = translate_typ body in
-              match (unboxed, body.desc) with
-              | true, Tuple { fields = [content] } -> content
+              let desc = apply_typ_fields ctx.env ~params ~args fields in
+              let desc = translate_typ_desc ctx desc in
+              match (unboxed, desc) with
+              | true, Tuple { fields = [content] } -> content.desc
               | true, _ -> failwith "invalid type, unboxed but tuple?"
-              | false, _ -> body)
+              | false, _ -> desc)
             | Cstr_record labels ->
-              let fields = apply_typ_labels env ~params ~args labels in
+              let fields = apply_typ_labels ctx.env ~params ~args labels in
               let fields =
                 List.map
                   (fun (ld, typ) -> (Ident.name ld.ld_id, translate_typ typ))
@@ -382,10 +520,14 @@ module Translate_typ = struct
               | false, _ ->
                 ()
               | true, _ -> failwith "invalid type, unboxed but many fields");
-              ir typ (Record { unboxed; fields }) in
+              Record { unboxed; fields } in
           (name, body))
         blocks in
-    ir typ (Variant { unboxed; constants; blocks })
+    Variant { unboxed; constants; blocks }
+
+  let translate_typ env typ =
+    let ctx = Translate_context.make ~env in
+    translate_typ ctx typ
 end
 
 let truly_unsafe_print ~(runtime_data : runtime_data) =
@@ -401,3 +543,5 @@ let truly_unsafe_print ~(runtime_data : runtime_data) =
   fun value ->
     let value = Obj.repr value in
     Format.printf "%a\n%!" print value
+
+(* TODO: dedup and cyclical data using let *)

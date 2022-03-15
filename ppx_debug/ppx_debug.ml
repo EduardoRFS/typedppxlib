@@ -9,7 +9,8 @@ let error_functor ~loc () =
    Location.raise_errorf ~loc "cmi for module was not found %a" Ident.print ident *)
 
 (* TODO: figure out better solution for still not inferred types *)
-let debug ~loc ~env ~expected:_ payload =
+
+let debug ~loc ~env payload ~expected:_ =
   match payload with
   | Parsetree.PStr [{ pstr_desc = Pstr_eval (expr, _); _ }] ->
     (* TODO: is may_forget_scope safe here? *)
@@ -50,6 +51,6 @@ let debug ~loc ~env ~expected:_ payload =
 
 let () =
   let extension =
-    Extension.declare "debug" Extension.Context.expression Ast_pattern.__ debug
+    Extension.declare "debug" Extension.Context.expression debug
   in
   register ~rules:[Context_free.Rule.extension extension] "ppx_debug"
