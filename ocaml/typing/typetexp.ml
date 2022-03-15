@@ -187,7 +187,9 @@ let instance_poly_univars env loc vars =
 
 type policy = Fixed | Extensible | Univars
 
-let rec transl_type env policy styp =
+(* typedppxlib start *)
+let rec transl_type' env policy styp =
+(* typedppxlib end *)
   Builtin_attributes.warning_scope styp.ptyp_attributes
     (fun () -> transl_type_aux env policy styp)
 
