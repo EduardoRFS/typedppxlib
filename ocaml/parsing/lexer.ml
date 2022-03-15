@@ -15,9 +15,8 @@ type error =
   | Keyword_as_label of string
   | Invalid_literal of string
   | Invalid_directive of string * string option
-;;
 
-exception Error of error * Location.t;;
+exception Error of error * Location.t
 
 (* The table of keywords *)
 
@@ -95,9 +94,9 @@ let store_string s = Buffer.add_string string_buffer s
 let store_lexeme lexbuf = store_string (Lexing.lexeme lexbuf)
 
 (* To store the position of the beginning of a string and comment *)
-let string_start_loc = ref Location.none;;
-let comment_start_loc = ref [];;
-let in_comment () = !comment_start_loc <> [];;
+let string_start_loc = ref Location.none
+let comment_start_loc = ref []
+let in_comment () = !comment_start_loc <> []
 let is_in_string = ref false
 let in_string () = !is_in_string
 let print_warnings = ref true
@@ -231,7 +230,6 @@ let update_loc lexbuf file line absolute chars =
     pos_lnum = if absolute then line else pos.pos_lnum + line;
     pos_bol = pos.pos_cnum - chars;
   }
-;;
 
 let preprocessor = ref None
 
@@ -312,7 +310,7 @@ let () =
     )
 
 
-# 316 "parsing/lexer.ml"
+# 314 "parsing/lexer.ml"
 let __ocaml_lex_tables = {
   Lexing.lex_base =
    "\000\000\155\255\156\255\224\000\003\001\038\001\073\001\108\001\
@@ -2791,353 +2789,353 @@ and __ocaml_lex_token_rec lexbuf __ocaml_lex_state =
   match Lexing.new_engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
 let
-# 379 "parsing/lexer.mll"
+# 377 "parsing/lexer.mll"
              bs
-# 2797 "parsing/lexer.ml"
+# 2795 "parsing/lexer.ml"
 = Lexing.sub_lexeme_char lexbuf lexbuf.Lexing.lex_start_pos in
-# 379 "parsing/lexer.mll"
+# 377 "parsing/lexer.mll"
                          (
       if not !escaped_newlines then error lexbuf (Illegal_character bs);
       update_loc lexbuf None 1 false 0;
       token lexbuf )
-# 2804 "parsing/lexer.ml"
+# 2802 "parsing/lexer.ml"
 
   | 1 ->
-# 384 "parsing/lexer.mll"
+# 382 "parsing/lexer.mll"
       ( update_loc lexbuf None 1 false 0;
         EOL )
-# 2810 "parsing/lexer.ml"
+# 2808 "parsing/lexer.ml"
 
   | 2 ->
-# 387 "parsing/lexer.mll"
+# 385 "parsing/lexer.mll"
       ( token lexbuf )
-# 2815 "parsing/lexer.ml"
+# 2813 "parsing/lexer.ml"
 
   | 3 ->
-# 389 "parsing/lexer.mll"
+# 387 "parsing/lexer.mll"
       ( UNDERSCORE )
-# 2820 "parsing/lexer.ml"
+# 2818 "parsing/lexer.ml"
 
   | 4 ->
-# 391 "parsing/lexer.mll"
+# 389 "parsing/lexer.mll"
       ( TILDE )
-# 2825 "parsing/lexer.ml"
+# 2823 "parsing/lexer.ml"
 
   | 5 ->
-# 393 "parsing/lexer.mll"
+# 391 "parsing/lexer.mll"
       ( error lexbuf
           (Reserved_sequence (".~", Some "is reserved for use in MetaOCaml")) )
-# 2831 "parsing/lexer.ml"
+# 2829 "parsing/lexer.ml"
 
   | 6 ->
 let
-# 395 "parsing/lexer.mll"
+# 393 "parsing/lexer.mll"
                                   name
-# 2837 "parsing/lexer.ml"
+# 2835 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 1) (lexbuf.Lexing.lex_curr_pos + -1) in
-# 396 "parsing/lexer.mll"
+# 394 "parsing/lexer.mll"
       ( check_label_name lexbuf name;
         LABEL name )
-# 2842 "parsing/lexer.ml"
+# 2840 "parsing/lexer.ml"
 
   | 7 ->
 let
-# 398 "parsing/lexer.mll"
+# 396 "parsing/lexer.mll"
                                                 name
-# 2848 "parsing/lexer.ml"
+# 2846 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 1) (lexbuf.Lexing.lex_curr_pos + -1) in
-# 399 "parsing/lexer.mll"
+# 397 "parsing/lexer.mll"
       ( warn_latin1 lexbuf;
         LABEL name )
-# 2853 "parsing/lexer.ml"
+# 2851 "parsing/lexer.ml"
 
   | 8 ->
-# 402 "parsing/lexer.mll"
+# 400 "parsing/lexer.mll"
       ( QUESTION )
-# 2858 "parsing/lexer.ml"
+# 2856 "parsing/lexer.ml"
 
   | 9 ->
 let
-# 403 "parsing/lexer.mll"
+# 401 "parsing/lexer.mll"
                                   name
-# 2864 "parsing/lexer.ml"
+# 2862 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 1) (lexbuf.Lexing.lex_curr_pos + -1) in
-# 404 "parsing/lexer.mll"
+# 402 "parsing/lexer.mll"
       ( check_label_name lexbuf name;
         OPTLABEL name )
-# 2869 "parsing/lexer.ml"
+# 2867 "parsing/lexer.ml"
 
   | 10 ->
 let
-# 406 "parsing/lexer.mll"
+# 404 "parsing/lexer.mll"
                                                 name
-# 2875 "parsing/lexer.ml"
+# 2873 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 1) (lexbuf.Lexing.lex_curr_pos + -1) in
-# 407 "parsing/lexer.mll"
+# 405 "parsing/lexer.mll"
       ( warn_latin1 lexbuf;
         OPTLABEL name )
-# 2880 "parsing/lexer.ml"
+# 2878 "parsing/lexer.ml"
 
   | 11 ->
 let
-# 409 "parsing/lexer.mll"
+# 407 "parsing/lexer.mll"
                              name
-# 2886 "parsing/lexer.ml"
+# 2884 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 410 "parsing/lexer.mll"
+# 408 "parsing/lexer.mll"
       ( try Hashtbl.find keyword_table name
         with Not_found -> LIDENT name )
-# 2891 "parsing/lexer.ml"
+# 2889 "parsing/lexer.ml"
 
   | 12 ->
 let
-# 412 "parsing/lexer.mll"
+# 410 "parsing/lexer.mll"
                                            name
-# 2897 "parsing/lexer.ml"
+# 2895 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 413 "parsing/lexer.mll"
+# 411 "parsing/lexer.mll"
       ( warn_latin1 lexbuf; LIDENT name )
-# 2901 "parsing/lexer.ml"
+# 2899 "parsing/lexer.ml"
 
   | 13 ->
 let
-# 414 "parsing/lexer.mll"
+# 412 "parsing/lexer.mll"
                              name
-# 2907 "parsing/lexer.ml"
+# 2905 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 415 "parsing/lexer.mll"
+# 413 "parsing/lexer.mll"
       ( UIDENT name )
-# 2911 "parsing/lexer.ml"
+# 2909 "parsing/lexer.ml"
 
   | 14 ->
 let
-# 416 "parsing/lexer.mll"
+# 414 "parsing/lexer.mll"
                                            name
-# 2917 "parsing/lexer.ml"
+# 2915 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 417 "parsing/lexer.mll"
+# 415 "parsing/lexer.mll"
       ( warn_latin1 lexbuf; UIDENT name )
-# 2921 "parsing/lexer.ml"
+# 2919 "parsing/lexer.ml"
 
   | 15 ->
 let
-# 418 "parsing/lexer.mll"
+# 416 "parsing/lexer.mll"
                    lit
-# 2927 "parsing/lexer.ml"
+# 2925 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 418 "parsing/lexer.mll"
+# 416 "parsing/lexer.mll"
                        ( INT (lit, None) )
-# 2931 "parsing/lexer.ml"
+# 2929 "parsing/lexer.ml"
 
   | 16 ->
 let
-# 419 "parsing/lexer.mll"
+# 417 "parsing/lexer.mll"
                     lit
-# 2937 "parsing/lexer.ml"
+# 2935 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos (lexbuf.Lexing.lex_curr_pos + -1)
 and
-# 419 "parsing/lexer.mll"
+# 417 "parsing/lexer.mll"
                                               modif
-# 2942 "parsing/lexer.ml"
+# 2940 "parsing/lexer.ml"
 = Lexing.sub_lexeme_char lexbuf (lexbuf.Lexing.lex_curr_pos + -1) in
-# 420 "parsing/lexer.mll"
+# 418 "parsing/lexer.mll"
       ( INT (lit, Some modif) )
-# 2946 "parsing/lexer.ml"
+# 2944 "parsing/lexer.ml"
 
   | 17 ->
 let
-# 421 "parsing/lexer.mll"
+# 419 "parsing/lexer.mll"
                                          lit
-# 2952 "parsing/lexer.ml"
+# 2950 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 422 "parsing/lexer.mll"
+# 420 "parsing/lexer.mll"
       ( FLOAT (lit, None) )
-# 2956 "parsing/lexer.ml"
+# 2954 "parsing/lexer.ml"
 
   | 18 ->
 let
-# 423 "parsing/lexer.mll"
+# 421 "parsing/lexer.mll"
                                           lit
-# 2962 "parsing/lexer.ml"
+# 2960 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos (lexbuf.Lexing.lex_curr_pos + -1)
 and
-# 423 "parsing/lexer.mll"
+# 421 "parsing/lexer.mll"
                                                                     modif
-# 2967 "parsing/lexer.ml"
+# 2965 "parsing/lexer.ml"
 = Lexing.sub_lexeme_char lexbuf (lexbuf.Lexing.lex_curr_pos + -1) in
-# 424 "parsing/lexer.mll"
+# 422 "parsing/lexer.mll"
       ( FLOAT (lit, Some modif) )
-# 2971 "parsing/lexer.ml"
+# 2969 "parsing/lexer.ml"
 
   | 19 ->
 let
-# 425 "parsing/lexer.mll"
+# 423 "parsing/lexer.mll"
                                                                     invalid
-# 2977 "parsing/lexer.ml"
+# 2975 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 426 "parsing/lexer.mll"
+# 424 "parsing/lexer.mll"
       ( error lexbuf (Invalid_literal invalid) )
-# 2981 "parsing/lexer.ml"
+# 2979 "parsing/lexer.ml"
 
   | 20 ->
-# 428 "parsing/lexer.mll"
+# 426 "parsing/lexer.mll"
       ( let s, loc = wrap_string_lexer string lexbuf in
         STRING (s, loc, None) )
-# 2987 "parsing/lexer.ml"
+# 2985 "parsing/lexer.ml"
 
   | 21 ->
 let
-# 430 "parsing/lexer.mll"
+# 428 "parsing/lexer.mll"
                        delim
-# 2993 "parsing/lexer.ml"
+# 2991 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 1) (lexbuf.Lexing.lex_curr_pos + -1) in
-# 431 "parsing/lexer.mll"
+# 429 "parsing/lexer.mll"
       ( let s, loc = wrap_string_lexer (quoted_string delim) lexbuf in
         STRING (s, loc, Some delim) )
-# 2998 "parsing/lexer.ml"
+# 2996 "parsing/lexer.ml"
 
   | 22 ->
 let
-# 433 "parsing/lexer.mll"
+# 431 "parsing/lexer.mll"
                           id
-# 3004 "parsing/lexer.ml"
+# 3002 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 2) (lexbuf.Lexing.lex_curr_pos + -1) in
-# 434 "parsing/lexer.mll"
+# 432 "parsing/lexer.mll"
       ( let orig_loc = Location.curr lexbuf in
         let s, loc = wrap_string_lexer (quoted_string "") lexbuf in
         let idloc = compute_quoted_string_idloc orig_loc 2 id in
         QUOTED_STRING_EXPR (id, idloc, s, loc, Some "") )
-# 3011 "parsing/lexer.ml"
+# 3009 "parsing/lexer.ml"
 
   | 23 ->
 let
-# 438 "parsing/lexer.mll"
+# 436 "parsing/lexer.mll"
                           id
-# 3017 "parsing/lexer.ml"
+# 3015 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 2) lexbuf.Lexing.lex_mem.(0)
 and
-# 438 "parsing/lexer.mll"
+# 436 "parsing/lexer.mll"
                                                     delim
-# 3022 "parsing/lexer.ml"
+# 3020 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_mem.(1) (lexbuf.Lexing.lex_curr_pos + -1) in
-# 439 "parsing/lexer.mll"
+# 437 "parsing/lexer.mll"
       ( let orig_loc = Location.curr lexbuf in
         let s, loc = wrap_string_lexer (quoted_string delim) lexbuf in
         let idloc = compute_quoted_string_idloc orig_loc 2 id in
         QUOTED_STRING_EXPR (id, idloc, s, loc, Some delim) )
-# 3029 "parsing/lexer.ml"
+# 3027 "parsing/lexer.ml"
 
   | 24 ->
 let
-# 443 "parsing/lexer.mll"
+# 441 "parsing/lexer.mll"
                            id
-# 3035 "parsing/lexer.ml"
+# 3033 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 3) (lexbuf.Lexing.lex_curr_pos + -1) in
-# 444 "parsing/lexer.mll"
+# 442 "parsing/lexer.mll"
       ( let orig_loc = Location.curr lexbuf in
         let s, loc = wrap_string_lexer (quoted_string "") lexbuf in
         let idloc = compute_quoted_string_idloc orig_loc 3 id in
         QUOTED_STRING_ITEM (id, idloc, s, loc, Some "") )
-# 3042 "parsing/lexer.ml"
+# 3040 "parsing/lexer.ml"
 
   | 25 ->
 let
-# 448 "parsing/lexer.mll"
+# 446 "parsing/lexer.mll"
                            id
-# 3048 "parsing/lexer.ml"
+# 3046 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 3) lexbuf.Lexing.lex_mem.(0)
 and
-# 448 "parsing/lexer.mll"
+# 446 "parsing/lexer.mll"
                                                      delim
-# 3053 "parsing/lexer.ml"
+# 3051 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_mem.(1) (lexbuf.Lexing.lex_curr_pos + -1) in
-# 449 "parsing/lexer.mll"
+# 447 "parsing/lexer.mll"
       ( let orig_loc = Location.curr lexbuf in
         let s, loc = wrap_string_lexer (quoted_string delim) lexbuf in
         let idloc = compute_quoted_string_idloc orig_loc 3 id in
         QUOTED_STRING_ITEM (id, idloc, s, loc, Some delim) )
-# 3060 "parsing/lexer.ml"
+# 3058 "parsing/lexer.ml"
 
   | 26 ->
-# 454 "parsing/lexer.mll"
+# 452 "parsing/lexer.mll"
       ( update_loc lexbuf None 1 false 1;
         (* newline is ('\013'* '\010') *)
         CHAR '\n' )
-# 3067 "parsing/lexer.ml"
+# 3065 "parsing/lexer.ml"
 
   | 27 ->
 let
-# 457 "parsing/lexer.mll"
+# 455 "parsing/lexer.mll"
                                          c
-# 3073 "parsing/lexer.ml"
+# 3071 "parsing/lexer.ml"
 = Lexing.sub_lexeme_char lexbuf (lexbuf.Lexing.lex_start_pos + 1) in
-# 458 "parsing/lexer.mll"
+# 456 "parsing/lexer.mll"
       ( CHAR c )
-# 3077 "parsing/lexer.ml"
+# 3075 "parsing/lexer.ml"
 
   | 28 ->
 let
-# 459 "parsing/lexer.mll"
+# 457 "parsing/lexer.mll"
                                                     c
-# 3083 "parsing/lexer.ml"
+# 3081 "parsing/lexer.ml"
 = Lexing.sub_lexeme_char lexbuf (lexbuf.Lexing.lex_start_pos + 2) in
-# 460 "parsing/lexer.mll"
+# 458 "parsing/lexer.mll"
       ( CHAR (char_for_backslash c) )
-# 3087 "parsing/lexer.ml"
+# 3085 "parsing/lexer.ml"
 
   | 29 ->
-# 462 "parsing/lexer.mll"
+# 460 "parsing/lexer.mll"
       ( CHAR(char_for_decimal_code lexbuf 2) )
-# 3092 "parsing/lexer.ml"
+# 3090 "parsing/lexer.ml"
 
   | 30 ->
-# 464 "parsing/lexer.mll"
+# 462 "parsing/lexer.mll"
       ( CHAR(char_for_octal_code lexbuf 3) )
-# 3097 "parsing/lexer.ml"
+# 3095 "parsing/lexer.ml"
 
   | 31 ->
-# 466 "parsing/lexer.mll"
+# 464 "parsing/lexer.mll"
       ( CHAR(char_for_hexadecimal_code lexbuf 3) )
-# 3102 "parsing/lexer.ml"
+# 3100 "parsing/lexer.ml"
 
   | 32 ->
 let
-# 467 "parsing/lexer.mll"
+# 465 "parsing/lexer.mll"
                     esc
-# 3108 "parsing/lexer.ml"
+# 3106 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 1) (lexbuf.Lexing.lex_start_pos + 3) in
-# 468 "parsing/lexer.mll"
+# 466 "parsing/lexer.mll"
       ( error lexbuf (Illegal_escape (esc, None)) )
-# 3112 "parsing/lexer.ml"
+# 3110 "parsing/lexer.ml"
 
   | 33 ->
-# 470 "parsing/lexer.mll"
+# 468 "parsing/lexer.mll"
       ( error lexbuf Empty_character_literal )
-# 3117 "parsing/lexer.ml"
+# 3115 "parsing/lexer.ml"
 
   | 34 ->
-# 472 "parsing/lexer.mll"
+# 470 "parsing/lexer.mll"
       ( let s, loc = wrap_comment_lexer comment lexbuf in
         COMMENT (s, loc) )
-# 3123 "parsing/lexer.ml"
+# 3121 "parsing/lexer.ml"
 
   | 35 ->
-# 475 "parsing/lexer.mll"
+# 473 "parsing/lexer.mll"
       ( let s, loc = wrap_comment_lexer comment lexbuf in
         if !handle_docstrings then
           DOCSTRING (Docstrings.docstring s loc)
         else
           COMMENT ("*" ^ s, loc)
       )
-# 3133 "parsing/lexer.ml"
+# 3131 "parsing/lexer.ml"
 
   | 36 ->
 let
-# 481 "parsing/lexer.mll"
+# 479 "parsing/lexer.mll"
                      stars
-# 3139 "parsing/lexer.ml"
+# 3137 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 3) lexbuf.Lexing.lex_curr_pos in
-# 482 "parsing/lexer.mll"
+# 480 "parsing/lexer.mll"
       ( let s, loc =
           wrap_comment_lexer
             (fun lexbuf ->
@@ -3146,32 +3144,32 @@ let
             lexbuf
         in
         COMMENT (s, loc) )
-# 3150 "parsing/lexer.ml"
+# 3148 "parsing/lexer.ml"
 
   | 37 ->
-# 491 "parsing/lexer.mll"
+# 489 "parsing/lexer.mll"
       ( if !print_warnings then
           Location.prerr_warning (Location.curr lexbuf) Warnings.Comment_start;
         let s, loc = wrap_comment_lexer comment lexbuf in
         COMMENT (s, loc) )
-# 3158 "parsing/lexer.ml"
+# 3156 "parsing/lexer.ml"
 
   | 38 ->
 let
-# 495 "parsing/lexer.mll"
+# 493 "parsing/lexer.mll"
                     stars
-# 3164 "parsing/lexer.ml"
+# 3162 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 2) (lexbuf.Lexing.lex_curr_pos + -2) in
-# 496 "parsing/lexer.mll"
+# 494 "parsing/lexer.mll"
       ( if !handle_docstrings && stars="" then
          (* (**) is an empty docstring *)
           DOCSTRING(Docstrings.docstring "" (Location.curr lexbuf))
         else
           COMMENT (stars, Location.curr lexbuf) )
-# 3172 "parsing/lexer.ml"
+# 3170 "parsing/lexer.ml"
 
   | 39 ->
-# 502 "parsing/lexer.mll"
+# 500 "parsing/lexer.mll"
       ( let loc = Location.curr lexbuf in
         Location.prerr_warning loc Warnings.Comment_not_end;
         lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
@@ -3179,376 +3177,376 @@ let
         lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
         STAR
       )
-# 3183 "parsing/lexer.ml"
+# 3181 "parsing/lexer.ml"
 
   | 40 ->
-# 510 "parsing/lexer.mll"
+# 508 "parsing/lexer.mll"
       ( let at_beginning_of_line pos = (pos.pos_cnum = pos.pos_bol) in
         if not (at_beginning_of_line lexbuf.lex_start_p)
         then HASH
         else try directive lexbuf with Failure _ -> HASH
       )
-# 3192 "parsing/lexer.ml"
+# 3190 "parsing/lexer.ml"
 
   | 41 ->
-# 515 "parsing/lexer.mll"
+# 513 "parsing/lexer.mll"
          ( AMPERSAND )
-# 3197 "parsing/lexer.ml"
+# 3195 "parsing/lexer.ml"
 
   | 42 ->
-# 516 "parsing/lexer.mll"
+# 514 "parsing/lexer.mll"
          ( AMPERAMPER )
-# 3202 "parsing/lexer.ml"
+# 3200 "parsing/lexer.ml"
 
   | 43 ->
-# 517 "parsing/lexer.mll"
+# 515 "parsing/lexer.mll"
          ( BACKQUOTE )
-# 3207 "parsing/lexer.ml"
+# 3205 "parsing/lexer.ml"
 
   | 44 ->
-# 518 "parsing/lexer.mll"
+# 516 "parsing/lexer.mll"
          ( QUOTE )
-# 3212 "parsing/lexer.ml"
+# 3210 "parsing/lexer.ml"
 
   | 45 ->
-# 519 "parsing/lexer.mll"
+# 517 "parsing/lexer.mll"
          ( LPAREN )
-# 3217 "parsing/lexer.ml"
+# 3215 "parsing/lexer.ml"
 
   | 46 ->
-# 520 "parsing/lexer.mll"
+# 518 "parsing/lexer.mll"
          ( RPAREN )
-# 3222 "parsing/lexer.ml"
+# 3220 "parsing/lexer.ml"
 
   | 47 ->
-# 521 "parsing/lexer.mll"
+# 519 "parsing/lexer.mll"
          ( STAR )
-# 3227 "parsing/lexer.ml"
+# 3225 "parsing/lexer.ml"
 
   | 48 ->
-# 522 "parsing/lexer.mll"
+# 520 "parsing/lexer.mll"
          ( COMMA )
-# 3232 "parsing/lexer.ml"
+# 3230 "parsing/lexer.ml"
 
   | 49 ->
-# 523 "parsing/lexer.mll"
+# 521 "parsing/lexer.mll"
          ( MINUSGREATER )
-# 3237 "parsing/lexer.ml"
+# 3235 "parsing/lexer.ml"
 
   | 50 ->
-# 524 "parsing/lexer.mll"
+# 522 "parsing/lexer.mll"
          ( DOT )
-# 3242 "parsing/lexer.ml"
+# 3240 "parsing/lexer.ml"
 
   | 51 ->
-# 525 "parsing/lexer.mll"
+# 523 "parsing/lexer.mll"
          ( DOTDOT )
-# 3247 "parsing/lexer.ml"
+# 3245 "parsing/lexer.ml"
 
   | 52 ->
 let
-# 526 "parsing/lexer.mll"
+# 524 "parsing/lexer.mll"
                                       op
-# 3253 "parsing/lexer.ml"
+# 3251 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 1) lexbuf.Lexing.lex_curr_pos in
-# 526 "parsing/lexer.mll"
+# 524 "parsing/lexer.mll"
                                           ( DOTOP op )
-# 3257 "parsing/lexer.ml"
+# 3255 "parsing/lexer.ml"
 
   | 53 ->
-# 527 "parsing/lexer.mll"
+# 525 "parsing/lexer.mll"
          ( COLON )
-# 3262 "parsing/lexer.ml"
+# 3260 "parsing/lexer.ml"
 
   | 54 ->
-# 528 "parsing/lexer.mll"
+# 526 "parsing/lexer.mll"
          ( COLONCOLON )
-# 3267 "parsing/lexer.ml"
+# 3265 "parsing/lexer.ml"
 
   | 55 ->
-# 529 "parsing/lexer.mll"
+# 527 "parsing/lexer.mll"
          ( COLONEQUAL )
-# 3272 "parsing/lexer.ml"
+# 3270 "parsing/lexer.ml"
 
   | 56 ->
-# 530 "parsing/lexer.mll"
+# 528 "parsing/lexer.mll"
          ( COLONGREATER )
-# 3277 "parsing/lexer.ml"
+# 3275 "parsing/lexer.ml"
 
   | 57 ->
-# 531 "parsing/lexer.mll"
+# 529 "parsing/lexer.mll"
          ( SEMI )
-# 3282 "parsing/lexer.ml"
+# 3280 "parsing/lexer.ml"
 
   | 58 ->
-# 532 "parsing/lexer.mll"
+# 530 "parsing/lexer.mll"
          ( SEMISEMI )
-# 3287 "parsing/lexer.ml"
+# 3285 "parsing/lexer.ml"
 
   | 59 ->
-# 533 "parsing/lexer.mll"
+# 531 "parsing/lexer.mll"
          ( LESS )
-# 3292 "parsing/lexer.ml"
+# 3290 "parsing/lexer.ml"
 
   | 60 ->
-# 534 "parsing/lexer.mll"
+# 532 "parsing/lexer.mll"
          ( LESSMINUS )
-# 3297 "parsing/lexer.ml"
+# 3295 "parsing/lexer.ml"
 
   | 61 ->
-# 535 "parsing/lexer.mll"
+# 533 "parsing/lexer.mll"
          ( EQUAL )
-# 3302 "parsing/lexer.ml"
+# 3300 "parsing/lexer.ml"
 
   | 62 ->
-# 536 "parsing/lexer.mll"
+# 534 "parsing/lexer.mll"
          ( LBRACKET )
-# 3307 "parsing/lexer.ml"
+# 3305 "parsing/lexer.ml"
 
   | 63 ->
-# 537 "parsing/lexer.mll"
+# 535 "parsing/lexer.mll"
          ( LBRACKETBAR )
-# 3312 "parsing/lexer.ml"
+# 3310 "parsing/lexer.ml"
 
   | 64 ->
-# 538 "parsing/lexer.mll"
+# 536 "parsing/lexer.mll"
          ( LBRACKETLESS )
-# 3317 "parsing/lexer.ml"
+# 3315 "parsing/lexer.ml"
 
   | 65 ->
-# 539 "parsing/lexer.mll"
+# 537 "parsing/lexer.mll"
          ( LBRACKETGREATER )
-# 3322 "parsing/lexer.ml"
+# 3320 "parsing/lexer.ml"
 
   | 66 ->
-# 540 "parsing/lexer.mll"
+# 538 "parsing/lexer.mll"
          ( RBRACKET )
-# 3327 "parsing/lexer.ml"
+# 3325 "parsing/lexer.ml"
 
   | 67 ->
-# 541 "parsing/lexer.mll"
+# 539 "parsing/lexer.mll"
          ( LBRACE )
-# 3332 "parsing/lexer.ml"
+# 3330 "parsing/lexer.ml"
 
   | 68 ->
-# 542 "parsing/lexer.mll"
+# 540 "parsing/lexer.mll"
          ( LBRACELESS )
-# 3337 "parsing/lexer.ml"
+# 3335 "parsing/lexer.ml"
 
   | 69 ->
-# 543 "parsing/lexer.mll"
+# 541 "parsing/lexer.mll"
          ( BAR )
-# 3342 "parsing/lexer.ml"
+# 3340 "parsing/lexer.ml"
 
   | 70 ->
-# 544 "parsing/lexer.mll"
+# 542 "parsing/lexer.mll"
          ( BARBAR )
-# 3347 "parsing/lexer.ml"
+# 3345 "parsing/lexer.ml"
 
   | 71 ->
-# 545 "parsing/lexer.mll"
+# 543 "parsing/lexer.mll"
          ( BARRBRACKET )
-# 3352 "parsing/lexer.ml"
+# 3350 "parsing/lexer.ml"
 
   | 72 ->
-# 546 "parsing/lexer.mll"
+# 544 "parsing/lexer.mll"
          ( GREATER )
-# 3357 "parsing/lexer.ml"
+# 3355 "parsing/lexer.ml"
 
   | 73 ->
-# 547 "parsing/lexer.mll"
+# 545 "parsing/lexer.mll"
          ( GREATERRBRACKET )
-# 3362 "parsing/lexer.ml"
+# 3360 "parsing/lexer.ml"
 
   | 74 ->
-# 548 "parsing/lexer.mll"
+# 546 "parsing/lexer.mll"
          ( RBRACE )
-# 3367 "parsing/lexer.ml"
+# 3365 "parsing/lexer.ml"
 
   | 75 ->
-# 549 "parsing/lexer.mll"
+# 547 "parsing/lexer.mll"
          ( GREATERRBRACE )
-# 3372 "parsing/lexer.ml"
+# 3370 "parsing/lexer.ml"
 
   | 76 ->
-# 550 "parsing/lexer.mll"
+# 548 "parsing/lexer.mll"
          ( LBRACKETAT )
-# 3377 "parsing/lexer.ml"
+# 3375 "parsing/lexer.ml"
 
   | 77 ->
-# 551 "parsing/lexer.mll"
+# 549 "parsing/lexer.mll"
            ( LBRACKETATAT )
-# 3382 "parsing/lexer.ml"
+# 3380 "parsing/lexer.ml"
 
   | 78 ->
-# 552 "parsing/lexer.mll"
+# 550 "parsing/lexer.mll"
            ( LBRACKETATATAT )
-# 3387 "parsing/lexer.ml"
+# 3385 "parsing/lexer.ml"
 
   | 79 ->
-# 553 "parsing/lexer.mll"
+# 551 "parsing/lexer.mll"
            ( LBRACKETPERCENT )
-# 3392 "parsing/lexer.ml"
+# 3390 "parsing/lexer.ml"
 
   | 80 ->
-# 554 "parsing/lexer.mll"
+# 552 "parsing/lexer.mll"
            ( LBRACKETPERCENTPERCENT )
-# 3397 "parsing/lexer.ml"
+# 3395 "parsing/lexer.ml"
 
   | 81 ->
-# 555 "parsing/lexer.mll"
+# 553 "parsing/lexer.mll"
          ( BANG )
-# 3402 "parsing/lexer.ml"
+# 3400 "parsing/lexer.ml"
 
   | 82 ->
-# 556 "parsing/lexer.mll"
+# 554 "parsing/lexer.mll"
          ( INFIXOP0 "!=" )
-# 3407 "parsing/lexer.ml"
+# 3405 "parsing/lexer.ml"
 
   | 83 ->
-# 557 "parsing/lexer.mll"
+# 555 "parsing/lexer.mll"
          ( PLUS )
-# 3412 "parsing/lexer.ml"
+# 3410 "parsing/lexer.ml"
 
   | 84 ->
-# 558 "parsing/lexer.mll"
+# 556 "parsing/lexer.mll"
          ( PLUSDOT )
-# 3417 "parsing/lexer.ml"
+# 3415 "parsing/lexer.ml"
 
   | 85 ->
-# 559 "parsing/lexer.mll"
+# 557 "parsing/lexer.mll"
          ( PLUSEQ )
-# 3422 "parsing/lexer.ml"
+# 3420 "parsing/lexer.ml"
 
   | 86 ->
-# 560 "parsing/lexer.mll"
+# 558 "parsing/lexer.mll"
          ( MINUS )
-# 3427 "parsing/lexer.ml"
+# 3425 "parsing/lexer.ml"
 
   | 87 ->
-# 561 "parsing/lexer.mll"
+# 559 "parsing/lexer.mll"
          ( MINUSDOT )
-# 3432 "parsing/lexer.ml"
+# 3430 "parsing/lexer.ml"
 
   | 88 ->
 let
-# 563 "parsing/lexer.mll"
+# 561 "parsing/lexer.mll"
                                 op
-# 3438 "parsing/lexer.ml"
+# 3436 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 564 "parsing/lexer.mll"
+# 562 "parsing/lexer.mll"
             ( PREFIXOP op )
-# 3442 "parsing/lexer.ml"
+# 3440 "parsing/lexer.ml"
 
   | 89 ->
 let
-# 565 "parsing/lexer.mll"
+# 563 "parsing/lexer.mll"
                                       op
-# 3448 "parsing/lexer.ml"
+# 3446 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 566 "parsing/lexer.mll"
+# 564 "parsing/lexer.mll"
             ( PREFIXOP op )
-# 3452 "parsing/lexer.ml"
+# 3450 "parsing/lexer.ml"
 
   | 90 ->
 let
-# 567 "parsing/lexer.mll"
+# 565 "parsing/lexer.mll"
                                               op
-# 3458 "parsing/lexer.ml"
+# 3456 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 568 "parsing/lexer.mll"
+# 566 "parsing/lexer.mll"
             ( INFIXOP0 op )
-# 3462 "parsing/lexer.ml"
+# 3460 "parsing/lexer.ml"
 
   | 91 ->
 let
-# 569 "parsing/lexer.mll"
+# 567 "parsing/lexer.mll"
                               op
-# 3468 "parsing/lexer.ml"
+# 3466 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 570 "parsing/lexer.mll"
+# 568 "parsing/lexer.mll"
             ( INFIXOP1 op )
-# 3472 "parsing/lexer.ml"
+# 3470 "parsing/lexer.ml"
 
   | 92 ->
 let
-# 571 "parsing/lexer.mll"
+# 569 "parsing/lexer.mll"
                               op
-# 3478 "parsing/lexer.ml"
+# 3476 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 572 "parsing/lexer.mll"
+# 570 "parsing/lexer.mll"
             ( INFIXOP2 op )
-# 3482 "parsing/lexer.ml"
+# 3480 "parsing/lexer.ml"
 
   | 93 ->
 let
-# 573 "parsing/lexer.mll"
+# 571 "parsing/lexer.mll"
                          op
-# 3488 "parsing/lexer.ml"
+# 3486 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 574 "parsing/lexer.mll"
+# 572 "parsing/lexer.mll"
             ( INFIXOP4 op )
-# 3492 "parsing/lexer.ml"
+# 3490 "parsing/lexer.ml"
 
   | 94 ->
-# 575 "parsing/lexer.mll"
+# 573 "parsing/lexer.mll"
             ( PERCENT )
-# 3497 "parsing/lexer.ml"
+# 3495 "parsing/lexer.ml"
 
   | 95 ->
 let
-# 576 "parsing/lexer.mll"
+# 574 "parsing/lexer.mll"
                                   op
-# 3503 "parsing/lexer.ml"
+# 3501 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 577 "parsing/lexer.mll"
+# 575 "parsing/lexer.mll"
             ( INFIXOP3 op )
-# 3507 "parsing/lexer.ml"
+# 3505 "parsing/lexer.ml"
 
   | 96 ->
 let
-# 578 "parsing/lexer.mll"
+# 576 "parsing/lexer.mll"
                                 op
-# 3513 "parsing/lexer.ml"
+# 3511 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 579 "parsing/lexer.mll"
+# 577 "parsing/lexer.mll"
             ( HASHOP op )
-# 3517 "parsing/lexer.ml"
+# 3515 "parsing/lexer.ml"
 
   | 97 ->
 let
-# 580 "parsing/lexer.mll"
+# 578 "parsing/lexer.mll"
                                        op
-# 3523 "parsing/lexer.ml"
+# 3521 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 581 "parsing/lexer.mll"
+# 579 "parsing/lexer.mll"
             ( LETOP op )
-# 3527 "parsing/lexer.ml"
+# 3525 "parsing/lexer.ml"
 
   | 98 ->
 let
-# 582 "parsing/lexer.mll"
+# 580 "parsing/lexer.mll"
                                        op
-# 3533 "parsing/lexer.ml"
+# 3531 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 583 "parsing/lexer.mll"
+# 581 "parsing/lexer.mll"
             ( ANDOP op )
-# 3537 "parsing/lexer.ml"
+# 3535 "parsing/lexer.ml"
 
   | 99 ->
-# 584 "parsing/lexer.mll"
+# 582 "parsing/lexer.mll"
         ( EOF )
-# 3542 "parsing/lexer.ml"
+# 3540 "parsing/lexer.ml"
 
   | 100 ->
 let
-# 585 "parsing/lexer.mll"
+# 583 "parsing/lexer.mll"
           illegal_char
-# 3548 "parsing/lexer.ml"
+# 3546 "parsing/lexer.ml"
 = Lexing.sub_lexeme_char lexbuf lexbuf.Lexing.lex_start_pos in
-# 586 "parsing/lexer.mll"
+# 584 "parsing/lexer.mll"
       ( error lexbuf (Illegal_character illegal_char) )
-# 3552 "parsing/lexer.ml"
+# 3550 "parsing/lexer.ml"
 
   | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf;
       __ocaml_lex_token_rec lexbuf __ocaml_lex_state
@@ -3561,21 +3559,21 @@ and __ocaml_lex_directive_rec lexbuf __ocaml_lex_state =
   match Lexing.new_engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
 let
-# 589 "parsing/lexer.mll"
+# 587 "parsing/lexer.mll"
                                 num
-# 3567 "parsing/lexer.ml"
+# 3565 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_mem.(0) lexbuf.Lexing.lex_mem.(1)
 and
-# 590 "parsing/lexer.mll"
+# 588 "parsing/lexer.mll"
                                             name
-# 3572 "parsing/lexer.ml"
+# 3570 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_mem.(2) lexbuf.Lexing.lex_mem.(3)
 and
-# 590 "parsing/lexer.mll"
+# 588 "parsing/lexer.mll"
                                                            directive
-# 3577 "parsing/lexer.ml"
+# 3575 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos (lexbuf.Lexing.lex_mem.(3) + 1) in
-# 592 "parsing/lexer.mll"
+# 590 "parsing/lexer.mll"
       (
         match int_of_string num with
         | exception _ ->
@@ -3589,7 +3587,7 @@ and
             update_loc lexbuf (Some name) (line_num - 1) true 0;
             token lexbuf
       )
-# 3593 "parsing/lexer.ml"
+# 3591 "parsing/lexer.ml"
 
   | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf;
       __ocaml_lex_directive_rec lexbuf __ocaml_lex_state
@@ -3599,15 +3597,15 @@ and comment lexbuf =
 and __ocaml_lex_comment_rec lexbuf __ocaml_lex_state =
   match Lexing.new_engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
-# 607 "parsing/lexer.mll"
+# 605 "parsing/lexer.mll"
       ( comment_start_loc := (Location.curr lexbuf) :: !comment_start_loc;
         store_lexeme lexbuf;
         comment lexbuf
       )
-# 3608 "parsing/lexer.ml"
+# 3606 "parsing/lexer.ml"
 
   | 1 ->
-# 612 "parsing/lexer.mll"
+# 610 "parsing/lexer.mll"
       ( match !comment_start_loc with
         | [] -> assert false
         | [_] -> comment_start_loc := []; Location.curr lexbuf
@@ -3615,10 +3613,10 @@ and __ocaml_lex_comment_rec lexbuf __ocaml_lex_state =
                   store_lexeme lexbuf;
                   comment lexbuf
        )
-# 3619 "parsing/lexer.ml"
+# 3617 "parsing/lexer.ml"
 
   | 2 ->
-# 620 "parsing/lexer.mll"
+# 618 "parsing/lexer.mll"
       (
         string_start_loc := Location.curr lexbuf;
         store_string_char '\"';
@@ -3635,15 +3633,15 @@ and __ocaml_lex_comment_rec lexbuf __ocaml_lex_state =
         is_in_string := false;
         store_string_char '\"';
         comment lexbuf )
-# 3639 "parsing/lexer.ml"
+# 3637 "parsing/lexer.ml"
 
   | 3 ->
 let
-# 636 "parsing/lexer.mll"
+# 634 "parsing/lexer.mll"
                                                        delim
-# 3645 "parsing/lexer.ml"
+# 3643 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_mem.(0) (lexbuf.Lexing.lex_curr_pos + -1) in
-# 637 "parsing/lexer.mll"
+# 635 "parsing/lexer.mll"
       (
         string_start_loc := Location.curr lexbuf;
         store_lexeme lexbuf;
@@ -3662,48 +3660,48 @@ let
         store_string delim;
         store_string_char '}';
         comment lexbuf )
-# 3666 "parsing/lexer.ml"
+# 3664 "parsing/lexer.ml"
 
   | 4 ->
-# 656 "parsing/lexer.mll"
+# 654 "parsing/lexer.mll"
       ( store_lexeme lexbuf; comment lexbuf )
-# 3671 "parsing/lexer.ml"
+# 3669 "parsing/lexer.ml"
 
   | 5 ->
-# 658 "parsing/lexer.mll"
+# 656 "parsing/lexer.mll"
       ( update_loc lexbuf None 1 false 1;
         store_lexeme lexbuf;
         comment lexbuf
       )
-# 3679 "parsing/lexer.ml"
+# 3677 "parsing/lexer.ml"
 
   | 6 ->
-# 663 "parsing/lexer.mll"
+# 661 "parsing/lexer.mll"
       ( store_lexeme lexbuf; comment lexbuf )
-# 3684 "parsing/lexer.ml"
+# 3682 "parsing/lexer.ml"
 
   | 7 ->
-# 665 "parsing/lexer.mll"
+# 663 "parsing/lexer.mll"
       ( store_lexeme lexbuf; comment lexbuf )
-# 3689 "parsing/lexer.ml"
+# 3687 "parsing/lexer.ml"
 
   | 8 ->
-# 667 "parsing/lexer.mll"
+# 665 "parsing/lexer.mll"
       ( store_lexeme lexbuf; comment lexbuf )
-# 3694 "parsing/lexer.ml"
+# 3692 "parsing/lexer.ml"
 
   | 9 ->
-# 669 "parsing/lexer.mll"
+# 667 "parsing/lexer.mll"
       ( store_lexeme lexbuf; comment lexbuf )
-# 3699 "parsing/lexer.ml"
+# 3697 "parsing/lexer.ml"
 
   | 10 ->
-# 671 "parsing/lexer.mll"
+# 669 "parsing/lexer.mll"
       ( store_lexeme lexbuf; comment lexbuf )
-# 3704 "parsing/lexer.ml"
+# 3702 "parsing/lexer.ml"
 
   | 11 ->
-# 673 "parsing/lexer.mll"
+# 671 "parsing/lexer.mll"
       ( match !comment_start_loc with
         | [] -> assert false
         | loc :: _ ->
@@ -3711,25 +3709,25 @@ let
           comment_start_loc := [];
           error_loc loc (Unterminated_comment start)
       )
-# 3715 "parsing/lexer.ml"
+# 3713 "parsing/lexer.ml"
 
   | 12 ->
-# 681 "parsing/lexer.mll"
+# 679 "parsing/lexer.mll"
       ( update_loc lexbuf None 1 false 0;
         store_lexeme lexbuf;
         comment lexbuf
       )
-# 3723 "parsing/lexer.ml"
+# 3721 "parsing/lexer.ml"
 
   | 13 ->
-# 686 "parsing/lexer.mll"
+# 684 "parsing/lexer.mll"
       ( store_lexeme lexbuf; comment lexbuf )
-# 3728 "parsing/lexer.ml"
+# 3726 "parsing/lexer.ml"
 
   | 14 ->
-# 688 "parsing/lexer.mll"
+# 686 "parsing/lexer.mll"
       ( store_lexeme lexbuf; comment lexbuf )
-# 3733 "parsing/lexer.ml"
+# 3731 "parsing/lexer.ml"
 
   | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf;
       __ocaml_lex_comment_rec lexbuf __ocaml_lex_state
@@ -3739,60 +3737,60 @@ and string lexbuf =
 and __ocaml_lex_string_rec lexbuf __ocaml_lex_state =
   match Lexing.new_engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
-# 692 "parsing/lexer.mll"
+# 690 "parsing/lexer.mll"
       ( lexbuf.lex_start_p )
-# 3745 "parsing/lexer.ml"
+# 3743 "parsing/lexer.ml"
 
   | 1 ->
 let
-# 693 "parsing/lexer.mll"
+# 691 "parsing/lexer.mll"
                                   space
-# 3751 "parsing/lexer.ml"
+# 3749 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_mem.(0) lexbuf.Lexing.lex_curr_pos in
-# 694 "parsing/lexer.mll"
+# 692 "parsing/lexer.mll"
       ( update_loc lexbuf None 1 false (String.length space);
         if in_comment () then store_lexeme lexbuf;
         string lexbuf
       )
-# 3758 "parsing/lexer.ml"
+# 3756 "parsing/lexer.ml"
 
   | 2 ->
 let
-# 698 "parsing/lexer.mll"
+# 696 "parsing/lexer.mll"
                                                   c
-# 3764 "parsing/lexer.ml"
+# 3762 "parsing/lexer.ml"
 = Lexing.sub_lexeme_char lexbuf (lexbuf.Lexing.lex_start_pos + 1) in
-# 699 "parsing/lexer.mll"
+# 697 "parsing/lexer.mll"
       ( store_escaped_char lexbuf (char_for_backslash c);
         string lexbuf )
-# 3769 "parsing/lexer.ml"
+# 3767 "parsing/lexer.ml"
 
   | 3 ->
-# 702 "parsing/lexer.mll"
+# 700 "parsing/lexer.mll"
       ( store_escaped_char lexbuf (char_for_decimal_code lexbuf 1);
          string lexbuf )
-# 3775 "parsing/lexer.ml"
+# 3773 "parsing/lexer.ml"
 
   | 4 ->
-# 705 "parsing/lexer.mll"
+# 703 "parsing/lexer.mll"
       ( store_escaped_char lexbuf (char_for_octal_code lexbuf 2);
          string lexbuf )
-# 3781 "parsing/lexer.ml"
+# 3779 "parsing/lexer.ml"
 
   | 5 ->
-# 708 "parsing/lexer.mll"
+# 706 "parsing/lexer.mll"
       ( store_escaped_char lexbuf (char_for_hexadecimal_code lexbuf 2);
          string lexbuf )
-# 3787 "parsing/lexer.ml"
+# 3785 "parsing/lexer.ml"
 
   | 6 ->
-# 711 "parsing/lexer.mll"
+# 709 "parsing/lexer.mll"
         ( store_escaped_uchar lexbuf (uchar_for_uchar_escape lexbuf);
           string lexbuf )
-# 3793 "parsing/lexer.ml"
+# 3791 "parsing/lexer.ml"
 
   | 7 ->
-# 714 "parsing/lexer.mll"
+# 712 "parsing/lexer.mll"
       ( if not (in_comment ()) then begin
 (*  Should be an error, but we are very lax.
           error lexbuf (Illegal_escape (Lexing.lexeme lexbuf, None))
@@ -3803,34 +3801,34 @@ let
         store_lexeme lexbuf;
         string lexbuf
       )
-# 3807 "parsing/lexer.ml"
+# 3805 "parsing/lexer.ml"
 
   | 8 ->
-# 725 "parsing/lexer.mll"
+# 723 "parsing/lexer.mll"
       ( if not (in_comment ()) then
           Location.prerr_warning (Location.curr lexbuf) Warnings.Eol_in_string;
         update_loc lexbuf None 1 false 0;
         store_lexeme lexbuf;
         string lexbuf
       )
-# 3817 "parsing/lexer.ml"
+# 3815 "parsing/lexer.ml"
 
   | 9 ->
-# 732 "parsing/lexer.mll"
+# 730 "parsing/lexer.mll"
       ( is_in_string := false;
         error_loc !string_start_loc Unterminated_string )
-# 3823 "parsing/lexer.ml"
+# 3821 "parsing/lexer.ml"
 
   | 10 ->
 let
-# 734 "parsing/lexer.mll"
+# 732 "parsing/lexer.mll"
           c
-# 3829 "parsing/lexer.ml"
+# 3827 "parsing/lexer.ml"
 = Lexing.sub_lexeme_char lexbuf lexbuf.Lexing.lex_start_pos in
-# 735 "parsing/lexer.mll"
+# 733 "parsing/lexer.mll"
       ( store_string_char c;
         string lexbuf )
-# 3834 "parsing/lexer.ml"
+# 3832 "parsing/lexer.ml"
 
   | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf;
       __ocaml_lex_string_rec lexbuf __ocaml_lex_state
@@ -3840,42 +3838,42 @@ and quoted_string delim lexbuf =
 and __ocaml_lex_quoted_string_rec delim lexbuf __ocaml_lex_state =
   match Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
-# 740 "parsing/lexer.mll"
+# 738 "parsing/lexer.mll"
       ( update_loc lexbuf None 1 false 0;
         store_lexeme lexbuf;
         quoted_string delim lexbuf
       )
-# 3849 "parsing/lexer.ml"
+# 3847 "parsing/lexer.ml"
 
   | 1 ->
-# 745 "parsing/lexer.mll"
+# 743 "parsing/lexer.mll"
       ( is_in_string := false;
         error_loc !string_start_loc Unterminated_string )
-# 3855 "parsing/lexer.ml"
+# 3853 "parsing/lexer.ml"
 
   | 2 ->
 let
-# 747 "parsing/lexer.mll"
+# 745 "parsing/lexer.mll"
                        edelim
-# 3861 "parsing/lexer.ml"
+# 3859 "parsing/lexer.ml"
 = Lexing.sub_lexeme lexbuf (lexbuf.Lexing.lex_start_pos + 1) (lexbuf.Lexing.lex_curr_pos + -1) in
-# 748 "parsing/lexer.mll"
+# 746 "parsing/lexer.mll"
       (
         if delim = edelim then lexbuf.lex_start_p
         else (store_lexeme lexbuf; quoted_string delim lexbuf)
       )
-# 3868 "parsing/lexer.ml"
+# 3866 "parsing/lexer.ml"
 
   | 3 ->
 let
-# 752 "parsing/lexer.mll"
+# 750 "parsing/lexer.mll"
           c
-# 3874 "parsing/lexer.ml"
+# 3872 "parsing/lexer.ml"
 = Lexing.sub_lexeme_char lexbuf lexbuf.Lexing.lex_start_pos in
-# 753 "parsing/lexer.mll"
+# 751 "parsing/lexer.mll"
       ( store_string_char c;
         quoted_string delim lexbuf )
-# 3879 "parsing/lexer.ml"
+# 3877 "parsing/lexer.ml"
 
   | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf;
       __ocaml_lex_quoted_string_rec delim lexbuf __ocaml_lex_state
@@ -3885,26 +3883,26 @@ and skip_hash_bang lexbuf =
 and __ocaml_lex_skip_hash_bang_rec lexbuf __ocaml_lex_state =
   match Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
-# 758 "parsing/lexer.mll"
+# 756 "parsing/lexer.mll"
       ( update_loc lexbuf None 3 false 0 )
-# 3891 "parsing/lexer.ml"
+# 3889 "parsing/lexer.ml"
 
   | 1 ->
-# 760 "parsing/lexer.mll"
+# 758 "parsing/lexer.mll"
       ( update_loc lexbuf None 1 false 0 )
-# 3896 "parsing/lexer.ml"
+# 3894 "parsing/lexer.ml"
 
   | 2 ->
-# 761 "parsing/lexer.mll"
+# 759 "parsing/lexer.mll"
        ( () )
-# 3901 "parsing/lexer.ml"
+# 3899 "parsing/lexer.ml"
 
   | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf;
       __ocaml_lex_skip_hash_bang_rec lexbuf __ocaml_lex_state
 
 ;;
 
-# 763 "parsing/lexer.mll"
+# 761 "parsing/lexer.mll"
  
 
   let token_with_comments lexbuf =
@@ -4014,4 +4012,4 @@ and __ocaml_lex_skip_hash_bang_rec lexbuf __ocaml_lex_state =
     preprocessor := Some (init, preprocess)
 
 
-# 4018 "parsing/lexer.ml"
+# 4016 "parsing/lexer.ml"
