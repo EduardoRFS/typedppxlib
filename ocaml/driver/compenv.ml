@@ -79,12 +79,11 @@ let is_unit_name name =
     done;
     true
   with Exit -> false
-;;
 
 let check_unit_name filename name =
   if not (is_unit_name name) then
     Location.prerr_warning (Location.in_file filename)
-      (Warnings.Bad_module_name name);;
+      (Warnings.Bad_module_name name)
 
 (* Compute name of module from output file name *)
 let module_of_filename inputfile outputprefix =
@@ -98,7 +97,6 @@ let module_of_filename inputfile outputprefix =
   let name = String.capitalize_ascii name in
   check_unit_name inputfile name;
   name
-;;
 
 type filename = string
 
@@ -227,6 +225,16 @@ let parse_warnings error v =
 let read_one_param ppf position name v =
   let set name options s =  setter ppf (fun b -> b) name options s in
   let clear name options s = setter ppf (fun b -> not b) name options s in
+  let compat name s =
+    let error_if_unset = function
+      | true -> true
+      | false ->
+        Printf.ksprintf (print_error ppf)
+          "Unsetting %s is not supported anymore" name;
+        true
+    in
+    setter ppf error_if_unset name [ ref true ] s
+  in
   match name with
   | "g" -> set "g" [ Clflags.debug ] v
   | "bin-annot" -> set "bin-annot" [ Clflags.binary_annotations ] v
@@ -243,7 +251,7 @@ let read_one_param ppf position name v =
   | "nolabels" -> set "nolabels" [ classic ] v
   | "principal" -> set "principal"  [ principal ] v
   | "rectypes" -> set "rectypes" [ recursive_types ] v
-  | "safe-string" -> clear "safe-string" [ unsafe_string ] v
+  | "safe-string" -> compat "safe-string" v (* kept for compatibility *)
   | "strict-sequence" -> set "strict-sequence" [ strict_sequence ] v
   | "strict-formats" -> set "strict-formats" [ strict_formats ] v
   | "thread" -> set "thread" [ use_threads ] v
@@ -474,6 +482,8 @@ let read_one_param ppf position name v =
       | None -> ()
       | Some pass -> set_save_ir_after pass true
     end
+  | "dump-into-file" -> Clflags.dump_into_file := true
+  | "dump-dir" -> Clflags.dump_dir := Some v
 
   | _ ->
     if not (List.mem name !can_discard) then begin
