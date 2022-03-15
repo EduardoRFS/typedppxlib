@@ -91,3 +91,12 @@ val create_package_mty:
     Location.t -> Env.t -> Parsetree.package_type ->
     (Longident.t Asttypes.loc * Parsetree.core_type) list *
       Parsetree.module_type
+
+(* typedppxlib *)
+type policy = Fixed | Extensible | Univars
+val transl_type_ref : (Env.t ->
+  policy -> Parsetree.core_type -> Typedtree.core_type)
+ ref
+val transl_extension_ref : (Env.t ->
+  policy -> Parsetree.core_type -> Parsetree.extension -> Typedtree.core_type)
+ ref

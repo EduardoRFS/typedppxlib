@@ -2778,7 +2778,7 @@ and type_structure ?(toplevel = false) funct_body anchor env sstr =
         Tstr_attribute x, [], shape_map, env
   in
   (* typedppxlib start *)
-  let type_str_item env str = !type_str_item_ref type_str_item ~toplevel funct_body anchor env str in
+  let type_str_item env shape_map str = !type_str_item_ref type_str_item ~toplevel funct_body anchor env shape_map str in
   (* typedppxlib end *)
   let rec type_struct env shape_map sstr =
     match sstr with
