@@ -8,12 +8,40 @@
     "ocaml": "*",
     "@opam/dune": "*",
     "@opam/ppxlib": "*",
-    "@opam/ppx_optcomp": "*",
-    "@opam/ocaml-migrate-types": "EduardoRFS/ocaml-migrate-types#ede96324676aa57256326f80da1ec57a4f6206f0"
+    "@opam/ppx_optcomp": "*"
   },
   "devDependencies": {
-    "ocaml": "4.12.x",
+    "ocaml": "4.13.x",
     "@opam/ocaml-lsp-server": "*",
     "@opam/ocamlformat": "0.20.1"
+  },
+  "resolutions": {
+    "ocaml": "esy-ocaml/ocaml#65e3f82dcd867d2b1f27c84597b3c25259b09396",
+    "@opam/sexplib0": "EduardoRFS/sexplib0:sexplib0.opam#6785e5fe565bdbcdbc00d861654b4f468d7a552c",
+    "@opam/base": "EduardoRFS/base:base.opam#6ea52922e153b3a3aae6ffbf2379c6f442671ebd",
+    "@opam/stdio": "janestreet/stdio:stdio.opam#f006beb417ee568c612c3d89824cfb6e15a98568",
+    "@opam/ppxlib": "kit-ty-kate/ppxlib:ppxlib.opam#1dd22803024cb3855b5988e1fd1723544ad69506",
+    "@opam/omd": "EduardoRFS/omd:omd.opam#7b866aacbc119e2be54b2dfcd198b860d3c497b1",
+    "@opam/easy-format": "nojb/easy-format:easy-format.opam#4568bfa1887146ab6ce41a48c9e00c8c1329c6e4",
+    "@opam/biniou": "EduardoRFS/biniou:biniou.opam#b5f099b4ad594e68383e55ffde6d296439d341b8",
+    "@opam/odoc-parser": {
+      "source": "kit-ty-kate/odoc-parser:odoc-parser.opam#bfa00f8b36778e16166e17c529f289633caf9fa7",
+      "override": {
+        "dependencies": {
+          "@opam/camlp-streams": "*"
+        }
+      }
+    },
+    "@opam/ocaml-lsp-server": {
+      "source": "EduardoRFS/ocaml-lsp:ocaml-lsp-server.opam#24fcebcec9f1e99815b036a6d45c0f912e8e8a19",
+      "override": {
+        "dependencies": {
+          "@opam/ocamlformat-rpc-lib": "*"
+        }
+      }
+    },
+    "@opam/ocamlformat": "EduardoRFS/ocamlformat:ocamlformat.opam#832e0a33d5cc05a77a335e6b6fa369172c742c95",
+    "@opam/ocamlformat-rpc": "EduardoRFS/ocamlformat:ocamlformat-rpc.opam#832e0a33d5cc05a77a335e6b6fa369172c742c95",
+    "@opam/ocamlformat-rpc-lib": "EduardoRFS/ocamlformat:ocamlformat-rpc-lib.opam#832e0a33d5cc05a77a335e6b6fa369172c742c95"
   }
 }
