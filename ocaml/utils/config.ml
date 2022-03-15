@@ -14,7 +14,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(* The main OCaml version string has moved to ../VERSION *)
+(* The main OCaml version string has moved to ../build-aux/ocaml_version.m4 *)
 let version = Sys.ocaml_version
 
 let bindir = "/usr/local/bin"
@@ -41,7 +41,7 @@ let ocamlc_cppflags = "-D_FILE_OFFSET_BITS=64 "
           the two drivers should be identical. *)
 let ocamlopt_cflags = "-O2 -fno-strict-aliasing -fwrapv -pthread -fPIC "
 let ocamlopt_cppflags = "-D_FILE_OFFSET_BITS=64 "
-let bytecomp_c_libraries = "-lm -ldl  -lpthread"
+let bytecomp_c_libraries = "-lm  -lpthread"
 (* bytecomp_c_compiler and native_c_compiler have been supported for a
    long time and are retained for backwards compatibility.
    For programs that don't need compatibility with older OCaml releases
@@ -52,7 +52,7 @@ let bytecomp_c_compiler =
   c_compiler ^ " " ^ ocamlc_cflags ^ " " ^ ocamlc_cppflags
 let native_c_compiler =
   c_compiler ^ " " ^ ocamlopt_cflags ^ " " ^ ocamlopt_cppflags
-let native_c_libraries = "-lm -ldl "
+let native_c_libraries = "-lm  -lpthread"
 let native_pack_linker = "ld -r -o "
 let ranlib = "ranlib"
 let default_rpath = "-Wl,-rpath,"
@@ -74,9 +74,9 @@ let mkdll, mkexe, mkmaindll =
       flexlink ^ " -exe -link \"-Wl,-E\"",
       flexlink ^ " -maindll"
     with Not_found ->
-      "gcc -shared ", "gcc -O2 -fno-strict-aliasing -fwrapv -pthread -Wall -Wdeclaration-after-statement -Werror -fno-common -fexcess-precision=standard -fno-tree-vrp -ffunction-sections  -Wl,-E ", "gcc -shared "
+      "gcc -shared ", "gcc -O2 -fno-strict-aliasing -fwrapv -pthread -Wall -Werror -fno-common -fexcess-precision=standard -fno-tree-vrp -ffunction-sections  -Wl,-E ", "gcc -shared "
   else
-    "gcc -shared ", "gcc -O2 -fno-strict-aliasing -fwrapv -pthread -Wall -Wdeclaration-after-statement -Werror -fno-common -fexcess-precision=standard -fno-tree-vrp -ffunction-sections  -Wl,-E ", "gcc -shared "
+    "gcc -shared ", "gcc -O2 -fno-strict-aliasing -fwrapv -pthread -Wall -Werror -fno-common -fexcess-precision=standard -fno-tree-vrp -ffunction-sections  -Wl,-E ", "gcc -shared "
 
 let flambda = false
 let with_flambda_invariants = false
@@ -84,43 +84,45 @@ let with_cmm_invariants = false
 let safe_string = true
 let default_safe_string = true
 let windows_unicode = 0 != 0
+let naked_pointers = false
+let force_instrumented_runtime = false
 
 let flat_float_array = true
 
 let function_sections = true
 let afl_instrument = false
 
-let exec_magic_number = "Caml1999X030"
+let exec_magic_number = "Caml1999X031"
     (* exec_magic_number is duplicated in runtime/caml/exec.h *)
-and cmi_magic_number = "Caml1999I030"
-and cmo_magic_number = "Caml1999O030"
-and cma_magic_number = "Caml1999A030"
+and cmi_magic_number = "Caml1999I031"
+and cmo_magic_number = "Caml1999O031"
+and cma_magic_number = "Caml1999A031"
 and cmx_magic_number =
   if flambda then
-    "Caml1999y030"
+    "Caml1999y031"
   else
-    "Caml1999Y030"
+    "Caml1999Y031"
 and cmxa_magic_number =
   if flambda then
-    "Caml1999z030"
+    "Caml1999z031"
   else
-    "Caml1999Z030"
-and ast_impl_magic_number = "Caml1999M030"
-and ast_intf_magic_number = "Caml1999N030"
-and cmxs_magic_number = "Caml1999D030"
-and cmt_magic_number = "Caml1999T030"
-and linear_magic_number = "Caml1999L030"
+    "Caml1999Z031"
+and ast_impl_magic_number = "Caml1999M031"
+and ast_intf_magic_number = "Caml1999N031"
+and cmxs_magic_number = "Caml1999D031"
+and cmt_magic_number = "Caml1999T031"
+and linear_magic_number = "Caml1999L031"
 
 let interface_suffix = ref ".mli"
 
-let max_tag = 245
+let max_tag = 243
 (* This is normally the same as in obj.ml, but we have to define it
    separately because it can differ when we're in the middle of a
    bootstrapping phase. *)
 let lazy_tag = 246
 
 let max_young_wosize = 256
-let stack_threshold = 256 (* see runtime/caml/config.h *)
+let stack_threshold = 16 (* see runtime/caml/config.h *)
 let stack_safety_margin = 60
 
 let architecture = "amd64"
@@ -148,9 +150,9 @@ let default_executable_name =
   | "Win32" | "Cygwin" -> "camlprog.exe"
   | _ -> "camlprog"
 
-let systhread_supported = true;;
+let systhread_supported = true
 
-let flexdll_dirs = [];;
+let flexdll_dirs = []
 
 type configuration_value =
   | String of string
@@ -203,6 +205,7 @@ let configuration_variables =
   p_bool "afl_instrument" afl_instrument;
   p_bool "windows_unicode" windows_unicode;
   p_bool "supports_shared_libraries" supports_shared_libraries;
+  p_bool "naked_pointers" naked_pointers;
 
   p "exec_magic_number" exec_magic_number;
   p "cmi_magic_number" cmi_magic_number;
@@ -229,8 +232,7 @@ let print_config oc =
   let print (x, v) =
     Printf.fprintf oc "%s: %a\n" x print_config_value v in
   List.iter print configuration_variables;
-  flush oc;
-;;
+  flush oc
 
 let config_var x =
   match List.assoc_opt x configuration_variables with
