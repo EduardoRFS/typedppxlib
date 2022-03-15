@@ -35,7 +35,7 @@ let rec_items = function
 
 (** Private row types are manifested as a sequence of definitions
     preceding a recursive group, we collect them and separate them from the
-    syntatic recursive group. *)
+    syntactic recursive group. *)
 type rec_group =
   { pre_ghosts: Types.signature_item list; group:core_rec_group }
 
@@ -133,7 +133,7 @@ let replace_in_place f sg =
     match current with
     | [] -> next_group f (commit ghosts) sg
     | a :: q ->
-        match f ~rec_group:q ~ghosts a.src with
+        match f ~ghosts a.src with
         | Some (info, {ghosts; replace_by}) ->
             let after = List.concat_map flatten q @ sg in
             let after = match recursive_sigitem a.src, replace_by with

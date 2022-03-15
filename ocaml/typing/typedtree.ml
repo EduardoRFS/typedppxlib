@@ -124,11 +124,11 @@ and expression_desc =
   | Texp_for of
       Ident.t * Parsetree.pattern * expression * expression * direction_flag *
         expression
-  | Texp_send of expression * meth * expression option
+  | Texp_send of expression * meth
   | Texp_new of Path.t * Longident.t loc * Types.class_declaration
   | Texp_instvar of Path.t * Path.t * string loc
   | Texp_setinstvar of Path.t * Path.t * string loc * expression
-  | Texp_override of Path.t * (Path.t * string loc * expression) list
+  | Texp_override of Path.t * (Ident.t * string loc * expression) list
   | Texp_letmodule of
       Ident.t option * string option loc * Types.module_presence * module_expr *
         expression
@@ -149,8 +149,9 @@ and expression_desc =
   | Texp_open of open_declaration * expression
 
 and meth =
-    Tmeth_name of string
+  | Tmeth_name of string
   | Tmeth_val of Ident.t
+  | Tmeth_ancestor of Ident.t * Path.t
 
 and 'k case =
     {
@@ -160,7 +161,7 @@ and 'k case =
     }
 
 and record_label_definition =
-  | Kept of Types.type_expr
+  | Kept of Types.type_expr * mutable_flag
   | Overridden of Longident.t loc * expression
 
 and binding_op =
@@ -194,7 +195,7 @@ and class_expr_desc =
   | Tcl_let of rec_flag * value_binding list *
                   (Ident.t * expression) list * class_expr
   | Tcl_constraint of
-      class_expr * class_type option * string list * string list * Concr.t
+      class_expr * class_type option * string list * string list * MethSet.t
     (* Visible instance variables, methods and concrete methods *)
   | Tcl_open of open_description * class_expr
 
@@ -518,6 +519,7 @@ and constructor_declaration =
     {
      cd_id: Ident.t;
      cd_name: string loc;
+     cd_vars: string loc list;
      cd_args: constructor_arguments;
      cd_res: core_type option;
      cd_loc: Location.t;
@@ -557,7 +559,7 @@ and extension_constructor =
   }
 
 and extension_constructor_kind =
-    Text_decl of constructor_arguments * core_type option
+    Text_decl of string loc list * constructor_arguments * core_type option
   | Text_rebind of Path.t * Longident.t loc
 
 and class_type =
@@ -621,7 +623,8 @@ and 'a class_infos =
 type implementation = {
   structure: structure;
   coercion: module_coercion;
-  signature: Types.signature
+  signature: Types.signature;
+  shape: Shape.t;
 }
 
 
