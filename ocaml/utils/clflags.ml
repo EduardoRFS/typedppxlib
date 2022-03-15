@@ -17,6 +17,8 @@
 
 include Ocaml_common.Clflags
 
+let cmi_file = ref None
+
 let output_complete_executable = ref false  (* -output-complete-exe *)
 
 and plugin = ref false                      (* -plugin ... *)
@@ -29,7 +31,7 @@ let cmm_invariants =
 let insn_sched_default = true
 let insn_sched = ref insn_sched_default (* -[no-]insn-sched *)
 
-let with_runtime = ref true;;         (* -with-runtime *)
+let with_runtime = ref true         (* -with-runtime *)
 
 let function_sections = ref false      (* -function-sections *)
 
@@ -69,6 +71,8 @@ let error_style_reader = {
   usage = "expected \"contextual\" or \"short\"";
   env_var = "OCAML_ERROR_STYLE";
 }
+
+let unboxed_types = ref false
 
 (* This is used by the -save-ir-after option. *)
 module Compiler_ir = struct

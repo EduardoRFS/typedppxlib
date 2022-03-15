@@ -152,12 +152,10 @@ module Stdlib : sig
 
   module Array : sig
     val exists2 : ('a -> 'b -> bool) -> 'a array -> 'b array -> bool
-    (* Same as [Array.exists], but for a two-argument predicate. Raise
-       Invalid_argument if the two arrays are determined to have
-       different lengths. *)
+    (** Same as [Array.exists2] from the standard library. *)
 
     val for_alli : (int -> 'a -> bool) -> 'a array -> bool
-    (** Same as {!Array.for_all}, but the
+    (** Same as [Array.for_all] from the standard library, but the
         function is applied with the index of the element as first argument,
         and the element itself as second argument. *)
 
@@ -351,6 +349,12 @@ val cut_at : string -> char -> string * string
    @since 4.01
 *)
 
+val ordinal_suffix : int -> string
+(** [ordinal_suffix n] is the appropriate suffix to append to the numeral [n] as
+    an ordinal number: [1] -> ["st"], [2] -> ["nd"], [3] -> ["rd"],
+    [4] -> ["th"], and so on.  Handles larger numbers (e.g., [42] -> ["nd"]) and
+    the numbers 11--13 (which all get ["th"]) correctly. *)
+
 (* Color handling *)
 module Color : sig
   type color =
@@ -362,7 +366,6 @@ module Color : sig
     | Magenta
     | Cyan
     | White
-  ;;
 
   type style =
     | FG of color (* foreground *)

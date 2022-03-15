@@ -13,6 +13,8 @@
 (*                                                                        *)
 (**************************************************************************)
 
+
+
 (** Command line flags *)
 
 (** Optimization parameters represented as ints indexed by round number. *)
@@ -69,6 +71,7 @@ val use_inlining_arguments_set : ?round:int -> inlining_arguments -> unit
 val objfiles : string list ref
 val ccobjs : string list ref
 val dllibs : string list ref
+val cmi_file : string option ref
 val compile_only : bool ref
 val output_name : string option ref
 val include_dirs : string list ref
@@ -127,6 +130,7 @@ val locations : bool ref
 val dump_source : bool ref
 val dump_parsetree : bool ref
 val dump_typedtree : bool ref
+val dump_shape : bool ref
 val dump_rawlambda : bool ref
 val dump_lambda : bool ref
 val dump_rawclambda : bool ref
@@ -186,10 +190,10 @@ val dlcode : bool ref
 val pic_code : bool ref
 val runtime_variant : string ref
 val with_runtime : bool ref
+val force_tmc : bool ref
 val force_slash : bool ref
 val keep_docs : bool ref
 val keep_locs : bool ref
-val unsafe_string : bool ref
 val opaque : bool ref
 val profile_columns : Profile.column list ref
 val flambda_invariant_checks : bool ref
@@ -214,6 +218,7 @@ val dumped_pass : string -> bool
 val set_dumped_pass : string -> bool -> unit
 
 val dump_into_file : bool ref
+val dump_dir : string option ref
 
 (* Support for flags that can also be set from an environment variable *)
 type 'a env_reader = {
