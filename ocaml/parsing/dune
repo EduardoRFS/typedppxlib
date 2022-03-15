@@ -11,6 +11,5 @@
    Typedppxlib_ocaml_stdlib))
  (libraries
   ocaml-compiler-libs.common
-  ocaml-migrate-parsetree
   typedppxlib_ocaml_utils
   typedppxlib_ocaml_stdlib))
