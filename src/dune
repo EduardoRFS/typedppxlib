@@ -5,7 +5,6 @@
   ppxlib
   ppxlib.astlib
   typedppxlib_ocaml_driver
-  typedppxlib_ocaml_typing
-  ocaml-migrate-types)
+  typedppxlib_ocaml_typing)
  (preprocess
   (pps ppx_optcomp)))

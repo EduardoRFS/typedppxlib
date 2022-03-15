@@ -1,25 +1,21 @@
 open Typedppxlib_ocaml_parsing
 open Typedppxlib_ocaml_typing
 
-module Ast_pattern : sig
-  type ('a, 'b, 'c) t
-
-  val __ : ('a, 'a -> 'b, 'b) t
-end
 module Extension : sig
   module Context : sig
-    type ('return, 'expected) t
-    val core_type : (Typedtree.core_type, unit) t
-    val expression : (Typedtree.expression, Typecore.type_expected) t
-    val structure_item : (Typedtree.structure_item * Types.signature, unit) t
+    type 'return t
+    val core_type : Typedtree.core_type t
+    val expression : (expected:Typecore.type_expected -> Typedtree.expression) t
+    val structure_item :
+      (Shape.Map.t -> Typedtree.structure_item * Types.signature * Shape.Map.t)
+      t
   end
   type t
 
   val declare :
     string ->
-    ('return, 'expected) Context.t ->
-    (Parsetree.payload, 'a, 'return) Ast_pattern.t ->
-    (loc:Location.t -> env:Env.t -> expected:'expected -> 'a) ->
+    'return Context.t ->
+    (loc:Location.t -> env:Env.t -> Parsetree.payload -> 'return) ->
     t
 end
 module Context_free : sig
@@ -64,8 +60,9 @@ module Hooks : sig
     bool ->
     Path.t option ->
     Env.t ->
+    Shape.Map.t ->
     Parsetree.structure_item ->
-    Typedtree.structure_item_desc * Types.signature * Env.t
+    Typedtree.structure_item_desc * Types.signature * Shape.Map.t * Env.t
   type read_cmi = string -> Cmi_format.cmi_infos
 
   type base = {

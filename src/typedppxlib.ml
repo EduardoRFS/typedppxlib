@@ -36,8 +36,9 @@ module Hooks = struct
     bool ->
     Path.t option ->
     Env.t ->
+    Shape.Map.t ->
     Parsetree.structure_item ->
-    Typedtree.structure_item_desc * Types.signature * Env.t
+    Typedtree.structure_item_desc * Types.signature * Shape.Map.t * Env.t
   type read_cmi = string -> Cmi_format.cmi_infos
 
   type base = {
@@ -119,26 +120,26 @@ module Hooks = struct
   let () =
     Cmi_format.read_cmi_ref := fun filename -> !instance.read_cmi filename
 end
-module Ast_pattern = struct
-  type ('a, 'b, 'c) t = To_b : ('a, 'a -> 'b, 'b) t
-  let __ = To_b
-end
+
 module Extension = struct
   open Typedppxlib_ocaml_parsing
   open Typedppxlib_ocaml_typing
 
   type ('a, 'b) eq = Eq : ('a, 'a) eq
   module Context = struct
-    type ('return, 'expected) t =
-      | Core_type : (Typedtree.core_type, unit) t
-      | Expression : (Typedtree.expression, Typecore.type_expected) t
-      | Structure_item : (Typedtree.structure_item * Types.signature, unit) t
+    type 'return t =
+      | Core_type : Typedtree.core_type t
+      | Expression : (expected:Typecore.type_expected -> Typedtree.expression) t
+      (* TODO: should shape be handled here? *)
+      | Structure_item
+          : (Shape.Map.t ->
+            Typedtree.structure_item * Types.signature * Shape.Map.t)
+            t
     let core_type = Core_type
     let expression = Expression
     let structure_item = Structure_item
 
-    let is_equal :
-        type a a' b b'. (a, a') t -> (b, b') t -> (a * a', b * b') eq option =
+    let is_equal : type a b. a t -> b t -> (a, b) eq option =
      fun a b ->
       match (a, b) with
       | Core_type, Core_type -> Some Eq
@@ -146,18 +147,16 @@ module Extension = struct
       | Structure_item, Structure_item -> Some Eq
       | _ -> None
   end
-  type ('return, 'expected) expander =
-    loc:Location.t -> env:Env.t -> expected:'expected -> 'return
+  type 'return expander =
+    loc:Location.t -> env:Env.t -> Parsetree.payload -> 'return
   type t =
     | T : {
         name : string;
-        context : ('return, 'expected) Context.t;
-        pattern : (Parsetree.payload, 'a, 'return) Ast_pattern.t;
-        expander : ('a, 'expected) expander;
+        context : 'return Context.t;
+        expander : 'return expander;
       }
         -> t
-  let declare name context pattern expander =
-    T { name; context; pattern; expander }
+  let declare name context expander = T { name; context; expander }
 
   let instance = Hashtbl.create 8
   let register (T extension) =
@@ -168,15 +167,11 @@ module Extension = struct
     | None -> Hashtbl.add instance extension.name (T extension)
 
   let () =
-    let find_expander :
-        type a a'.
-        (a, a') Context.t ->
-        string ->
-        (Parsetree.payload -> a, a') expander option =
+    let find_expander : type a. a Context.t -> string -> a expander option =
      fun expected_context name ->
       match Hashtbl.find_opt instance name with
       (* TODO: which loc goes here *)
-      | Some (T { context; pattern = To_b; expander; _ }) -> (
+      | Some (T { context; expander; _ }) -> (
           match Context.is_equal expected_context context with
           | Some Eq -> Some expander
           | None -> None)
@@ -199,24 +194,27 @@ module Extension = struct
                (({ txt = name; loc = name_loc }, payload) as extension) ->
             match find_expander Core_type name with
             (* TODO: which loc goes here *)
-            | Some expander -> expander ~loc:name_loc ~env ~expected:() payload
+            | Some expander -> expander ~loc:name_loc ~env payload
             | None -> super.transl_extension env policy styp extension);
         type_str_item =
-          (fun super ~toplevel funct_body anchor env stri ->
+          (fun super ~toplevel funct_body anchor env shape_map stri ->
             match stri.pstr_desc with
             | Pstr_extension (({ txt = name; loc = name_loc }, payload), _attrs)
               -> (
                 match find_expander Structure_item name with
                 (* TODO: which loc goes here *)
                 | Some expander ->
-                    let tstri, tsig =
-                      expander ~loc:name_loc ~env ~expected:() payload
+                    let tstri, tsig, shape_map =
+                      expander ~loc:name_loc ~env payload shape_map
                     in
                     (* TODO: preserve the loc by the user *)
-                    (tstri.str_desc, tsig, tstri.str_env)
+                    (tstri.str_desc, tsig, shape_map, tstri.str_env)
                 | None ->
-                    super.type_str_item ~toplevel funct_body anchor env stri)
-            | _ -> super.type_str_item ~toplevel funct_body anchor env stri);
+                    super.type_str_item ~toplevel funct_body anchor env
+                      shape_map stri)
+            | _ ->
+                super.type_str_item ~toplevel funct_body anchor env shape_map
+                  stri);
       }
     in
     Hooks.register hooks
@@ -270,13 +268,14 @@ module Error_recovery = struct
                 exp_env = env;
               });
         type_str_item =
-          (fun super ~toplevel funct_body anchor env str ->
+          (fun super ~toplevel funct_body anchor env shape_map str ->
             let reset = snapshot () in
-            try super.type_str_item ~toplevel funct_body anchor env str
+            try
+              super.type_str_item ~toplevel funct_body anchor env shape_map str
             with _exn ->
               (* TODO: how to handle exceptions *)
               reset ();
-              (Tstr_attribute (recover_attr str), [], env));
+              (Tstr_attribute (recover_attr str), [], shape_map, env));
       }
     in
     Hooks.register hooks
@@ -411,25 +410,24 @@ module Transform = struct
 
   let transform str =
     let env = Lazy.force_val env in
-    let tstr, _, _, _ = Typemod.type_structure env str in
+    let tstr, _, _, _, _ = Typemod.type_structure env str in
     let transform = !instance in
     Error_recovery.untype (transform tstr)
 
   (* ppxlib wrapper*)
   let of_ppxlib_structure, to_ppxlib_structure =
+    (* TODO: test this *)
     let (module Ppxlib_current_version) =
       match Ppxlib_ast.Find_version.from_magic Config.ast_impl_magic_number with
       | Impl impl -> impl
       | _ -> failwith "incompatible ppxlib version"
     in
     let of_ppxlib_current_version_structure :
-        Ppxlib_current_version.Ast.Parsetree.structure ->
-        Typedppxlib_ocaml_parsing.Parsetree.structure =
+        Ppxlib_current_version.Ast.Parsetree.structure -> Parsetree.structure =
       Obj.magic
     in
     let to_ppxlib_current_version_structure :
-        Typedppxlib_ocaml_parsing.Parsetree.structure ->
-        Ppxlib_current_version.Ast.Parsetree.structure =
+        Parsetree.structure -> Ppxlib_current_version.Ast.Parsetree.structure =
       Obj.magic
     in
 
