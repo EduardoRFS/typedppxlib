@@ -31,6 +31,17 @@ module Hooks = struct
     Parsetree.core_type ->
     Parsetree.extension ->
     Typedtree.core_type
+  type type_structure =
+    toplevel:bool ->
+    bool ->
+    Path.t option ->
+    Env.t ->
+    Parsetree.structure ->
+    Typedtree.structure
+    * Types.signature_item list
+    * Typemod.Signature_names.t
+    * Shape.t
+    * Env.t
   type type_str_item =
     toplevel:bool ->
     bool ->
@@ -47,6 +58,7 @@ module Hooks = struct
     type_extension : type_extension;
     transl_type : transl_type;
     transl_extension : transl_extension;
+    type_structure : type_structure;
     type_str_item : type_str_item;
     read_cmi : read_cmi;
   }
@@ -57,6 +69,7 @@ module Hooks = struct
     type_extension : base -> type_extension;
     transl_type : base -> transl_type;
     transl_extension : base -> transl_extension;
+    type_structure : base -> type_structure;
     type_str_item : base -> type_str_item;
     read_cmi : base -> read_cmi;
   }
@@ -68,6 +81,7 @@ module Hooks = struct
       type_extension = (fun super -> super.type_extension);
       transl_type = (fun super -> super.transl_type);
       transl_extension = (fun super -> super.transl_extension);
+      type_structure = (fun super -> super.type_structure);
       type_str_item = (fun super -> super.type_str_item);
       read_cmi = (fun super -> super.read_cmi);
     }
@@ -82,6 +96,7 @@ module Hooks = struct
          transl_type = !Typetexp.transl_type_ref;
          transl_extension = !Typetexp.transl_extension_ref;
          (* TODO: that's not great because we ignore this parameters *)
+         type_structure = !Typemod.type_structure_ref;
          type_str_item = (fun ~toplevel:_ _ _ -> !type_str_item_source);
          read_cmi = !Cmi_format.read_cmi_ref;
        }
@@ -97,6 +112,7 @@ module Hooks = struct
           (fun ?in_function -> hook.type_extension super ?in_function);
         transl_type = (fun env -> hook.transl_type super env);
         transl_extension = (fun env -> hook.transl_extension super env);
+        type_structure = (fun ~toplevel -> hook.type_structure super ~toplevel);
         type_str_item = (fun ~toplevel -> hook.type_str_item super ~toplevel);
         read_cmi = (fun filename -> hook.read_cmi super filename);
       }

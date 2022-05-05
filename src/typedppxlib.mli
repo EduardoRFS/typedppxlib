@@ -55,6 +55,18 @@ module Hooks : sig
     Parsetree.core_type ->
     Parsetree.extension ->
     Typedtree.core_type
+  type type_structure =
+    toplevel:bool ->
+    bool ->
+    Path.t option ->
+    Env.t ->
+    Parsetree.structure ->
+    Typedtree.structure
+    * Types.signature_item list
+    * Typemod.Signature_names.t
+    * Shape.t
+    * Env.t
+
   type type_str_item =
     toplevel:bool ->
     bool ->
@@ -71,6 +83,7 @@ module Hooks : sig
     type_extension : type_extension;
     transl_type : transl_type;
     transl_extension : transl_extension;
+    type_structure : type_structure;
     type_str_item : type_str_item;
     read_cmi : read_cmi;
   }
@@ -81,6 +94,7 @@ module Hooks : sig
     type_extension : base -> type_extension;
     transl_type : base -> transl_type;
     transl_extension : base -> transl_extension;
+    type_structure : base -> type_structure;
     type_str_item : base -> type_str_item;
     read_cmi : base -> read_cmi;
   }
