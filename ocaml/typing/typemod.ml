@@ -2429,9 +2429,12 @@ and type_open_decl_aux ?used_slot ?toplevel funct_body names env od =
     } in
     open_descr, sg, newenv
 (* typedppxlib start *)
+and type_structure_ref = ref (fun ~toplevel -> type_structure' ~toplevel)
+(* TODO: default duplicated from type_structure' *)
+and type_structure ?(toplevel = false) = !type_structure_ref ~toplevel
 and type_str_item_ref = ref (fun type_str_item ~toplevel:_ _ _ -> type_str_item)
 (* typedppxlib end *)
-and type_structure ?(toplevel = false) funct_body anchor env sstr =
+and type_structure' ?(toplevel = false) funct_body anchor env sstr =
   let names = Signature_names.create () in
 
   let type_str_item env shape_map {pstr_loc = loc; pstr_desc = desc} =

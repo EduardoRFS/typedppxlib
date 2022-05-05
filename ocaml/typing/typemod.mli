@@ -140,6 +140,17 @@ exception Error_forward of Location.error
 val report_error: Env.t -> loc:Location.t -> error -> Location.error
 
 (* typedppxlib *)
+val type_structure_ref : (
+  toplevel:bool ->
+    bool ->
+    Path.t option ->
+    Env.t ->
+    Parsetree.structure ->
+    Typedtree.structure *
+    Types.signature_item list * Signature_names.t *
+    Shape.t * Env.t)
+ ref
+
 val type_str_item_ref : (
   (Env.t ->
    Shape.Map.t ->
