@@ -1,5 +1,4 @@
-version = 0.20.1
-profile = conventional
+version = unknown
 
 leading-nested-match-parens = false
 align-constructors-decl = true

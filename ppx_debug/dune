@@ -3,21 +3,27 @@
  (public_name ppx_debug)
  (kind ppx_rewriter)
  (modules Ppx_debug)
- (libraries typedppxlib ppx_debug_runtime_data)
- (ppx_runtime_libraries ppx_debug.runtime)
+ (libraries typedppxlib ppx_debug_runtime ppx_debug.printing)
+ (ppx_runtime_libraries ppx_debug.printing)
  (preprocess
   (pps ppxlib.metaquot)))
+
+(library
+ (name ppx_debug_printing)
+ (public_name ppx_debug.printing)
+ (modules Ppx_debug_printing)
+ (libraries typedppxlib ppx_debug_transparent_env ppx_debug_runtime unix))
+
+(library
+ (name ppx_debug_transparent_env)
+ (public_name ppx_debug.transparent_env)
+ (modules Ppx_debug_transparent_env)
+ (libraries typedppxlib))
 
 (library
  (name ppx_debug_runtime)
  (public_name ppx_debug.runtime)
  (modules Ppx_debug_runtime)
- (libraries typedppxlib ppx_debug_runtime_data unix))
-
-(library
- (name ppx_debug_runtime_data)
- (public_name ppx_debug.runtime_data)
- (modules Ppx_debug_runtime_data)
  (libraries typedppxlib))
 
 (executable
