@@ -129,6 +129,8 @@ module Hooks = struct
   let () =
     Typetexp.transl_extension_ref := fun env -> !instance.transl_extension env
   let () =
+    (Typemod.type_structure_ref :=
+       fun ~toplevel -> !instance.type_structure ~toplevel);
     Typemod.type_str_item_ref :=
       fun type_str_item ->
         type_str_item_source := type_str_item;
