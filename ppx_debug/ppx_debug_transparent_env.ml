@@ -8,7 +8,10 @@ end
 
 let ( let* ) = Option.bind
 let bug () = failwith "this is likely a bug"
-let unimplemented () = failwith "unimplemented"
+
+(* let unimplemented () = failwith "unimplemented" *)
+let unimplemented_none () = None
+let unimplemented_env env = env
 
 (* TODO: why not use OCaml Env? *)
 type term =
@@ -41,7 +44,7 @@ let rec lookup path env =
   | Path.Pdot (left, right) ->
     let* fields = lookup_module left env in
     String.Map.find_opt right fields
-  | Path.Papply _ -> unimplemented ()
+  | Path.Papply _ -> unimplemented_none ()
 
 and lookup_type path env =
   let* term = lookup path env in
@@ -90,11 +93,11 @@ and structure_item env stri =
   | Tstr_value _ -> env
   | Tstr_primitive _ -> env
   | Tstr_type (rec_flag, decls) -> type_declarations env rec_flag decls
-  | Tstr_typext _ -> unimplemented ()
-  | Tstr_exception _ -> unimplemented ()
+  | Tstr_typext _ -> unimplemented_env env
+  | Tstr_exception _ -> unimplemented_env env
   | Tstr_module module_ -> module_binding env module_
-  | Tstr_recmodule _ -> unimplemented ()
-  | Tstr_include _ -> unimplemented ()
+  | Tstr_recmodule _ -> unimplemented_env env
+  | Tstr_include _ -> unimplemented_env env
   | Tstr_modtype _
   | Tstr_open _
   | Tstr_class _
@@ -111,13 +114,13 @@ and signature env sig_ =
 and signature_item env sigi =
   match sigi.sig_desc with
   | Tsig_type (rec_flag, decls) -> type_declarations env rec_flag decls
-  | Tsig_typesubst _ -> unimplemented ()
-  | Tsig_typext _ -> unimplemented ()
-  | Tsig_exception _ -> unimplemented ()
+  | Tsig_typesubst _ -> unimplemented_env env
+  | Tsig_typext _ -> unimplemented_env env
+  | Tsig_exception _ -> unimplemented_env env
   | Tsig_module module_ -> module_declaration env module_
-  | Tsig_modsubst _ -> unimplemented ()
-  | Tsig_recmodule _ -> unimplemented ()
-  | Tsig_include _ -> unimplemented ()
+  | Tsig_modsubst _ -> unimplemented_env env
+  | Tsig_recmodule _ -> unimplemented_env env
+  | Tsig_include _ -> unimplemented_env env
   | Tsig_value _ -> env
   | Tsig_modtype _ -> env
   | Tsig_modtypesubst _ -> env
@@ -151,11 +154,11 @@ and module_expr env module_ =
   | Tmod_structure str ->
     let fields, env = structure env str in
     Some (fields, env)
-  | Tmod_functor _ -> unimplemented ()
-  | Tmod_apply _ -> unimplemented ()
+  | Tmod_functor _ -> unimplemented_none ()
+  | Tmod_apply _ -> unimplemented_none ()
   | Tmod_constraint (internal_module, _mty, _constraint, _coercion) ->
     module_expr env internal_module
-  | Tmod_unpack _ -> unimplemented ()
+  | Tmod_unpack _ -> unimplemented_none ()
 
 and module_declaration env module_ =
   match module_.md_id with
@@ -168,14 +171,12 @@ and module_declaration env module_ =
 and module_type env mty =
   match mty.mty_desc with
   | Tmty_ident (path, _lid)
-  | Tmty_alias (path, _lid) -> (
-    let* term = lookup path env in
-    match term with
-    | Type _ -> bug ()
-    | Module fields -> Some (fields, env))
+  | Tmty_alias (path, _lid) ->
+    let* fields = lookup_module path env in
+    Some (fields, env)
   | Tmty_signature sig_ ->
     let fields, env = signature env sig_ in
     Some (fields, env)
-  | Tmty_functor _ -> unimplemented ()
-  | Tmty_with _ -> unimplemented ()
-  | Tmty_typeof _ -> unimplemented ()
+  | Tmty_functor _ -> unimplemented_none ()
+  | Tmty_with _ -> unimplemented_none ()
+  | Tmty_typeof _ -> unimplemented_none ()
