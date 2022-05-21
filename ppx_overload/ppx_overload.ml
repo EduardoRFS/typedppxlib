@@ -1,7 +1,6 @@
 open Ppxlib
 open Typedppxlib
 open Typedppxlib_ocaml_typing
-open Typedppxlib_ocaml_parsing
 open Parsetree
 
 let expr_is_error expr =
