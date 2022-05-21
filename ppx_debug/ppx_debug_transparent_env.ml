@@ -38,12 +38,23 @@ let mem ident tbl = Option.is_some (find_same_opt ident tbl)
 let rec lookup path env =
   match path with
   | Path.Pident ident -> find_same_opt ident env.idents
-  | Path.Pdot (left, right) -> (
-    let* left = lookup left env in
-    match left with
-    | Type _ -> bug ()
-    | Module fields -> String.Map.find_opt right fields)
+  | Path.Pdot (left, right) ->
+    let* fields = lookup_module left env in
+    String.Map.find_opt right fields
   | Path.Papply _ -> unimplemented ()
+
+and lookup_type path env =
+  let* term = lookup path env in
+  match term with
+  | Type { rec_flag = _; type_; types = _ } -> Some type_
+  | Module _ -> (* TODO: maybe bug? *) None
+
+and lookup_module path env =
+  let* term = lookup path env in
+  match term with
+  | Type _ -> (* TODO: maybe bug? *) None
+  | Module fields -> Some fields
+
 let enter ident term env =
   let { idents; current_module; module_stack } = env in
   (* TODO: what if Ident is defined twice *)
@@ -134,11 +145,9 @@ and module_binding env module_ =
 
 and module_expr env module_ =
   match module_.mod_desc with
-  | Tmod_ident (path, _lid) -> (
-    let* term = lookup path env in
-    match term with
-    | Type _ -> bug ()
-    | Module fields -> Some (fields, env))
+  | Tmod_ident (path, _lid) ->
+    let* fields = lookup_module path env in
+    Some (fields, env)
   | Tmod_structure str ->
     let fields, env = structure env str in
     Some (fields, env)

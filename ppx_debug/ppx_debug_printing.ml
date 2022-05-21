@@ -271,40 +271,26 @@ module Translate_typ = struct
     | _, [arg] when path = path_lazy_t -> Lazy_t (translate_typ ctx arg)
     | _ -> (
       let decl =
-        match Ppx_debug_transparent_env.lookup path ctx.transparent_env with
-        | Some (Type { rec_flag = _; type_; types = _ }) -> type_
-        | Some (Module _) -> failwith "I think that's a bug"
+        match
+          Ppx_debug_transparent_env.lookup_type path ctx.transparent_env
+        with
+        | Some type_ -> type_
         | None -> Env.find_type path ctx.env in
       match decl.type_kind with
-      | Type_abstract -> translate_abstract ctx decl path args
+      | Type_abstract -> translate_abstract ctx decl args
       | Type_record (fields, representation) ->
         translate_record ctx decl fields representation args
       | Type_variant (constructors, representation) ->
         translate_variant ctx decl constructors representation args
       | Type_open -> Unimplemented)
 
-  and translate_abstract ctx decl path args =
-    let translate_abstract_concrete decl =
-      match decl.type_manifest with
-      | Some body ->
-        let params = decl.type_params in
-        let body = apply_typ_args ctx.env ~params ~args body in
-
-        translate_typ_desc ctx body
-      | None -> Abstract in
+  and translate_abstract ctx decl args =
     match decl.type_manifest with
     | Some body ->
       let params = decl.type_params in
       let body = apply_typ_args ctx.env ~params ~args body in
 
       translate_typ_desc ctx body
-    | None ->
-    match Ppx_debug_transparent_env.lookup path ctx.transparent_env with
-    | Some term -> (
-      match term with
-      | Module _ -> Abstract
-      | Type { rec_flag = _; type_; types = _ } ->
-        translate_abstract_concrete type_)
     | None -> Abstract
 
   and translate_record ctx decl fields representation args =
