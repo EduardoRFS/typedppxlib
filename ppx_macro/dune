@@ -1,0 +1,22 @@
+(library
+ (name ppx_macro)
+ (public_name ppx_macro)
+ (kind ppx_rewriter)
+ (modules Ppx_macro)
+ ; require optcomp only if needed 
+ (libraries
+  typedppxlib
+  ocaml-compiler-libs.bytecomp
+  ocaml-compiler-libs.optcomp))
+
+(executable
+ (name test)
+ (modules Test)
+ (preprocess
+  (staged_pps ppx_macro)))
+
+(rule
+ (alias runtest)
+ (deps ./test.exe)
+ (action
+  (run ./test.exe)))

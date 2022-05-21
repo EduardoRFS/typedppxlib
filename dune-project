@@ -15,3 +15,7 @@
 (package
  (name ppx_debug)
  (depends typedppxlib))
+
+(package
+ (name ppx_macro)
+ (depends typedppxlib))
