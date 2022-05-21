@@ -7,7 +7,9 @@ module Extension : sig
     val core_type : Typedtree.core_type t
     val expression : (expected:Typecore.type_expected -> Typedtree.expression) t
     val structure_item :
-      (Shape.Map.t -> Typedtree.structure_item * Types.signature * Shape.Map.t)
+      ((Parsetree.structure_item ->
+       Typedtree.structure_item_desc * Types.signature * Shape.Map.t * Env.t) ->
+      Typedtree.structure_item_desc * Types.signature * Shape.Map.t * Env.t)
       t
   end
   type t

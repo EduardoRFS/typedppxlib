@@ -148,10 +148,17 @@ module Extension = struct
     type 'return t =
       | Core_type : Typedtree.core_type t
       | Expression : (expected:Typecore.type_expected -> Typedtree.expression) t
-      (* TODO: should shape be handled here? *)
+      (* TODO: this API is clearly weird *)
       | Structure_item
-          : (Shape.Map.t ->
-            Typedtree.structure_item * Types.signature * Shape.Map.t)
+          : ((Parsetree.structure_item ->
+             Typedtree.structure_item_desc
+             * Types.signature
+             * Shape.Map.t
+             * Env.t) ->
+            Typedtree.structure_item_desc
+            * Types.signature
+            * Shape.Map.t
+            * Env.t)
             t
     let core_type = Core_type
     let expression = Expression
@@ -177,24 +184,25 @@ module Extension = struct
   let declare name context expander = T { name; context; expander }
 
   let instance = Hashtbl.create 8
-  let register (T extension) =
-    match Hashtbl.find_opt instance extension.name with
+  let find_expander_by_context (type a) name (expected_context : a Context.t) =
+    let cases = Hashtbl.find_all instance name in
+    List.find_map
+      (fun (T { context; expander; _ }) ->
+        match Context.is_equal expected_context context with
+        | Some Eq -> Some (expander : a expander)
+        | None -> None)
+      cases
+  let register (T { name; context; expander = _ } as extension) =
+    match find_expander_by_context name context with
     (* what to do here? *)
-    | Some _ ->
-        failwith (Printf.sprintf "two ppx with same name %s" extension.name)
-    | None -> Hashtbl.add instance extension.name (T extension)
+    | Some _ -> failwith (Printf.sprintf "two ppx with same name %s" name)
+    | None -> Hashtbl.add instance name extension
 
   let () =
     let find_expander : type a. a Context.t -> string -> a expander option =
-     fun expected_context name ->
-      match Hashtbl.find_opt instance name with
-      (* TODO: which loc goes here *)
-      | Some (T { context; expander; _ }) -> (
-          match Context.is_equal expected_context context with
-          | Some Eq -> Some expander
-          | None -> None)
-      | None -> None
+     fun expected_context name -> find_expander_by_context name expected_context
     in
+
     let hooks =
       {
         Hooks.default with
@@ -222,11 +230,10 @@ module Extension = struct
                 match find_expander Structure_item name with
                 (* TODO: which loc goes here *)
                 | Some expander ->
-                    let tstri, tsig, shape_map =
-                      expander ~loc:name_loc ~env payload shape_map
-                    in
+                    expander ~loc:name_loc ~env payload (fun stri ->
+                        super.type_str_item ~toplevel funct_body anchor env
+                          shape_map stri)
                     (* TODO: preserve the loc by the user *)
-                    (tstri.str_desc, tsig, shape_map, tstri.str_env)
                 | None ->
                     super.type_str_item ~toplevel funct_body anchor env
                       shape_map stri)
