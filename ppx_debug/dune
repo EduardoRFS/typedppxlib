@@ -31,7 +31,7 @@
  (modules Test)
  (libraries base compiler-libs)
  (preprocess
-  (staged_pps ppx_debug)))
+  (staged_pps ppx_debug ppxlib.metaquot)))
 
 (rule
  (alias runtest)

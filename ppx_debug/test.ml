@@ -54,8 +54,18 @@ module Mutually_recursive = struct
 
   let x = Node (Pair (Node (Pair (Leaf 1, Leaf 2)), Leaf 3))
 end
-(* TODO: GADT *)
 
+(* TODO: GADT *)
+module Code = struct
+  open Parsetree
+  let loc = Location.none
+  let code = [%str let x = 1 + 2]
+  let tcode =
+    let env =
+      Compmisc.init_path ();
+      Compmisc.initial_env () in
+    Typemod.type_structure env code
+end
 let () =
   let lazy_value = lazy 18 in
 
@@ -84,4 +94,6 @@ let () =
       Variant.x,
       Existential.x,
       Recursive.x,
-      Mutually_recursive.x]
+      Mutually_recursive.x,
+      Code.code
+    (* TODO: , Code.tcode *)]
