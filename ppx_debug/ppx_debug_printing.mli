@@ -10,5 +10,9 @@ end
 
 type runtime_data
 type partial_ir
-val truly_unsafe_print :
-  runtime_data:runtime_data -> partial_ir:partial_ir -> 'a -> unit
+val truly_unsafe_pp :
+  Format.formatter ->
+  runtime_data:runtime_data ->
+  partial_ir:partial_ir ->
+  'a ->
+  unit

@@ -548,7 +548,7 @@ end
 
 type runtime_data
 type partial_ir
-let truly_unsafe_print ~runtime_data:_ ~(partial_ir : partial_ir) =
+let truly_unsafe_pp fmt ~runtime_data:_ ~(partial_ir : partial_ir) =
   (* TODO: receive id separated from runtime_data to avoid parsing
            also use the id to hold the print_typ function *)
   let partial_ir =
@@ -557,6 +557,6 @@ let truly_unsafe_print ~runtime_data:_ ~(partial_ir : partial_ir) =
   let print = Printer.print_value partial_ir in
   fun value ->
     let value = Obj.repr value in
-    Format.printf "%a\n%!" print value
+    Format.fprintf fmt "%a\n%!" print value
 
 (* TODO: dedup and cyclical data using let *)

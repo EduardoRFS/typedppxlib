@@ -66,6 +66,7 @@ module Code = struct
       Compmisc.initial_env () in
     Typemod.type_structure env code
 end
+
 let () =
   let lazy_value = lazy 18 in
 
@@ -97,3 +98,5 @@ let () =
       Mutually_recursive.x,
       Code.code
     (* TODO: , Code.tcode *)]
+let () = assert (fst [%debug.id 1, "works"] = 1)
+let () = Format.eprintf "pp %a\n%!" [%debug.pp 2, "also works"] ()

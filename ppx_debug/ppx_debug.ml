@@ -58,41 +58,51 @@ let type_str_item (super : Hooks.base) ~toplevel funct_body anchor env shape_map
   (desc, sg, shape_map, new_env)
 
 let hooks = { Hooks.default with type_structure; type_str_item }
-let debug ~loc ~env payload ~expected:_ =
+
+type return_kind =
+  | Unit
+  | Id
+  | PP
+let extract ~loc payload =
   match payload with
-  | Parsetree.PStr [{ pstr_desc = Pstr_eval (expr, _); _ }] ->
-    (* TODO: is may_forget_scope safe here? *)
-    (* TODO: warning about non printable types *)
-    let type_expr =
-      let expr = Typecore.type_exp env expr in
-      Ctype.(full_expand ~may_forget_scope:true env (instance expr.exp_type))
-    in
-    let const_string string =
-      Ast_helper.(Const.string ~loc string |> Exp.constant ~loc) in
-    let id, runtime_data =
-      let runtime_data = Ppx_debug_runtime.make ~env in
-      let id = Ppx_debug_runtime.(Id.to_string (id runtime_data)) in
-      (id, const_string (Ppx_debug_runtime.to_string runtime_data)) in
-    let transparent_env =
-      try Shadow_stack.build_env () with
+  | Parsetree.PStr [{ pstr_desc = Pstr_eval (expr, _); _ }] -> expr
+  | _ -> Location.raise_errorf ~loc "expected a single expression"
+
+let debug kind ~loc ~env payload ~expected:_ =
+  let expr = extract ~loc payload in
+  (* TODO: is may_forget_scope safe here? *)
+  (* TODO: warning about non printable types *)
+  let type_expr =
+    let expr = Typecore.type_exp env expr in
+    Ctype.(full_expand ~may_forget_scope:true env (instance expr.exp_type))
+  in
+  let const_string string =
+    Ast_helper.(Const.string ~loc string |> Exp.constant ~loc) in
+  let id, runtime_data =
+    let runtime_data = Ppx_debug_runtime.make ~env in
+    let id = Ppx_debug_runtime.(Id.to_string (id runtime_data)) in
+    (id, const_string (Ppx_debug_runtime.to_string runtime_data)) in
+  let transparent_env =
+    try Shadow_stack.build_env () with
+    | exn ->
+      Printexc.print_backtrace stderr;
+      raise exn in
+  (* TODO: any advantage of using the ~expected? *)
+  (* TODO: is this an stable output? Could we do better? *)
+  (* TODO: ir could also be done lazily *)
+  let partial_ir =
+    let open Ppx_debug_printing in
+    let partial_ir =
+      try Translate_typ.translate_typ env transparent_env type_expr with
       | exn ->
         Printexc.print_backtrace stderr;
         raise exn in
-    (* TODO: any advantage of using the ~expected? *)
-    (* TODO: is this an stable output? Could we do better? *)
-    (* TODO: ir could also be done lazily *)
-    let partial_ir =
-      let open Ppx_debug_printing in
-      let partial_ir =
-        try Translate_typ.translate_typ env transparent_env type_expr with
-        | exn ->
-          Printexc.print_backtrace stderr;
-          raise exn in
-      const_string (Printing_ir.to_string partial_ir) in
+    const_string (Printing_ir.to_string partial_ir) in
 
-    let expr =
-      [%expr
-        Ppx_debug_printing.truly_unsafe_print
+  let pp_expr x =
+    [%expr
+      fun fmt () ->
+        Ppx_debug_printing.truly_unsafe_pp fmt
           ~runtime_data:
             (let module M = struct
                external magic : 'a -> 'b = "%identity"
@@ -103,18 +113,38 @@ let debug ~loc ~env payload ~expected:_ =
                external magic : 'a -> 'b = "%identity"
              end in
             (M.magic [%e partial_ir] : Ppx_debug_printing.partial_ir))
-          [%e expr]] in
+          [%e x]] in
+  let expr =
+    match kind with
+    | Unit -> [%expr Format.eprintf "%a\n%!" [%e pp_expr expr] ()]
+    | Id ->
+      [%expr
+        let x = [%e expr] in
+        Format.eprintf "%a\n%!" [%e pp_expr [%expr x]] ();
+        x]
+    | PP -> pp_expr expr in
 
-    let ppx_debug_attribute =
-      {
-        attr_name = { txt = "ppx_debug." ^ id; loc };
-        attr_payload = PStr [];
-        attr_loc = loc;
-      } in
-    let expr = { expr with pexp_attributes = [ppx_debug_attribute] } in
-    expr |> Typecore.type_exp env
-  | _ -> Location.raise_errorf ~loc "expected a single expression"
+  let ppx_debug_attribute =
+    {
+      attr_name = { txt = "ppx_debug." ^ id; loc };
+      attr_payload = PStr [];
+      attr_loc = loc;
+    } in
+  let expr = { expr with pexp_attributes = [ppx_debug_attribute] } in
+  expr |> Typecore.type_exp env
 
 let () =
-  let extension = Extension.declare "debug" Extension.Context.expression debug in
-  register ~rules:[Context_free.Rule.extension extension] ~hooks "ppx_debug"
+  let debug_unit =
+    Extension.declare "debug" Extension.Context.expression (debug Unit) in
+  let debug_id =
+    Extension.declare "debug.id" Extension.Context.expression (debug Id) in
+  let debug_pp =
+    Extension.declare "debug.pp" Extension.Context.expression (debug PP) in
+  register
+    ~rules:
+      [
+        Context_free.Rule.extension debug_unit;
+        Context_free.Rule.extension debug_id;
+        Context_free.Rule.extension debug_pp;
+      ]
+    ~hooks "ppx_debug"
