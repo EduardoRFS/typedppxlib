@@ -1,3 +1,4 @@
+open Typedppxlib_ocaml_parsing
 open Typedppxlib_ocaml_typing
 open Typedtree
 

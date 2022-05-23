@@ -25,7 +25,7 @@ depends: [
   "dune-rpc"
   "dyn"
   "stdune"
-  "fiber" {>= "3.1.1"}
+  "fiber"
   "xdg"
   "ordering"
   "dune-build-info"
@@ -37,7 +37,7 @@ depends: [
   "csexp" {>= "1.5"}
   "ocamlformat-rpc-lib" {>= "0.21.0"}
   "odoc" {with-doc}
-  "ocaml" {>= "4.14" & < "4.15"}
+  "ocaml" {>= "4.13" & < "4.14"}
 ]
 dev-repo: "git+https://github.com/ocaml/ocaml-lsp.git"
 build: [
@@ -53,10 +53,10 @@ build: [
 ]
 url {
   src:
-    "https://github.com/ocaml/ocaml-lsp/releases/download/1.11.6/jsonrpc-1.11.6.tbz"
+    "https://github.com/ocaml/ocaml-lsp/releases/download/1.10.5/jsonrpc-1.10.5.tbz"
   checksum: [
-    "sha256=50b546ced5332c4a038bcf68b65b7888cb8e61aebe102e8c80b23a4c5899bbbb"
-    "sha512=e7c6d07d3943b088198af383120f2e75478b84dd6077eafa0f01fc808072b9cebe667651d22e11592c1f134f5d289cccf7c58e1ad1aae6c0ce92a4eca32b1371"
+    "sha256=4de252eadd6bb968563ef58d6adae7494588e93d7b5ca8a8b072d88b30430dcc"
+    "sha512=accf974fc43e34b7a87b99f4c5e2e1d8a04f152b5d92eea8a1531d7e223776942a96c12a18272c1a7ace7d5c43da6b7028e83a2c5c75becaa13bf712c48423b0"
   ]
 }
-x-commit-hash: "1c02a6b8c44f3858ad8c0b7c114d4f14fbf53f9c"
+x-commit-hash: "1372614cf0a3a31e58ee255ab59661d64cf9a0b0"

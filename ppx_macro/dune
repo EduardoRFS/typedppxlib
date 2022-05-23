@@ -12,6 +12,7 @@
 (executable
  (name test)
  (modules Test)
+ (libraries ocaml-compiler-libs.common)
  (preprocess
   (staged_pps ppx_macro)))
 

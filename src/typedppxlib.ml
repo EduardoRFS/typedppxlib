@@ -347,7 +347,7 @@ module Error_recovery = struct
     fun tstr -> mapper.structure mapper tstr
 end
 
-[%%if ocaml_version < (4, 13, 0)]
+[%%if ocaml_version < (4, 14, 0)]
 module Cmi_compatibility = struct
   open Typedppxlib_ocaml_typing
 
@@ -403,10 +403,14 @@ module Cmi_compatibility = struct
       [%%if ocaml_version < (4, 13, 0)]
       let cmi_sign = Migrate_412_413.copy_signature cmi_sign
       [%%endif]
+      [%%if ocaml_version < (4, 14, 0)]
+      let cmi_sign = Migrate_413_414.copy_signature cmi_sign
+      [%%endif]
     end in
     (* TODO: check this on every update *)
-    let cmi_sign : Types_413.Types.signature = cmi_sign in
+    let cmi_sign : Types_414.Types.signature = cmi_sign in
     let cmi_sign : Types.signature = Obj.magic cmi_sign in
+    (* TODO: cmi_flags is partially broken, as Unsafe_string was removed *)
     Cmi_format.
       {
         cmi_name = cmi.cmi_name;
@@ -438,35 +442,6 @@ module Transform = struct
     let tstr, _, _, _, _ = Typemod.type_structure env str in
     let transform = !instance in
     Error_recovery.untype (transform tstr)
-
-  (* ppxlib wrapper*)
-  let of_ppxlib_structure, to_ppxlib_structure =
-    (* TODO: test this *)
-    let (module Ppxlib_current_version) =
-      match Ppxlib_ast.Find_version.from_magic Config.ast_impl_magic_number with
-      | Impl impl -> impl
-      | _ -> failwith "incompatible ppxlib version"
-    in
-    let of_ppxlib_current_version_structure :
-        Ppxlib_current_version.Ast.Parsetree.structure -> Parsetree.structure =
-      Obj.magic
-    in
-    let to_ppxlib_current_version_structure :
-        Parsetree.structure -> Ppxlib_current_version.Ast.Parsetree.structure =
-      Obj.magic
-    in
-
-    let module Selected_ast = Ppxlib_ast.Select_ast (Ppxlib_current_version) in
-    let of_ppxlib_structure ppxlib_str =
-      of_ppxlib_current_version_structure
-        (Selected_ast.to_ocaml Structure ppxlib_str)
-    in
-    let to_ppxlib_structure str =
-      Selected_ast.of_ocaml Structure (to_ppxlib_current_version_structure str)
-    in
-    (of_ppxlib_structure, to_ppxlib_structure)
-  let transform ppxlib_str =
-    ppxlib_str |> of_ppxlib_structure |> transform |> to_ppxlib_structure
 end
 
 let registered = ref false

@@ -17,6 +17,10 @@
 
 include Ocaml_common.Clflags
 
+let dump_shape = ref false
+let force_tmc = ref false
+let dump_dir = ref None
+
 let cmi_file = ref None
 
 let output_complete_executable = ref false  (* -output-complete-exe *)

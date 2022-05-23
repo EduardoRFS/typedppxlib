@@ -1,5 +1,6 @@
 open Ppxlib
 open Typedppxlib
+open Typedppxlib_ocaml_parsing
 open Typedppxlib_ocaml_typing
 open Parsetree
 

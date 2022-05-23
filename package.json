@@ -8,10 +8,11 @@
     "ocaml": "*",
     "@opam/dune": "*",
     "@opam/ppxlib": "*",
-    "@opam/ppx_optcomp": "*"
+    "@opam/ppx_optcomp": "*",
+    "@opam/ocaml-migrate-types": "EduardoRFS/ocaml-migrate-types#01086bc6b8946bb724f9c42095329fadc4b1764f"
   },
   "devDependencies": {
-    "ocaml": "4.14.x",
+    "ocaml": "4.13.x",
     "@opam/ocaml-lsp-server": "*",
     "@opam/ocamlformat": "0.20.1"
   }
