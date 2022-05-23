@@ -456,7 +456,7 @@ module Printer = struct
   let record ~unboxed fields fmt value =
     let value : 'a array = Obj.magic value in
 
-    fprintf fmt "{ ";
+    fprintf fmt "@[<v 0>@ {@;<0 2>@[<v 0>";
     let rec loop i l =
       match l with
       | [] -> ()
@@ -468,8 +468,8 @@ module Printer = struct
             Array.get value i in
         fprintf fmt "%s = %a" name print field;
         (match tl with
-        | [] -> fprintf fmt " }"
-        | _ -> fprintf fmt "; ");
+        | [] -> fprintf fmt "@]@;}@]"
+        | _ -> fprintf fmt ";@;");
         loop (i + 1) tl in
     loop 0 fields
 
